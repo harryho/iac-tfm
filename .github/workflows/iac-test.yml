@@ -1,0 +1,37 @@
+name: "iac-tfm: Terraform Test"
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - modules/static-site
+          - modules/contact-form
+          - modules/team-iam
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform init
+        working-directory: ${{ matrix.module }}
+        run: terraform init
+
+      - name: Terraform test
+        working-directory: ${{ matrix.module }}
+        run: terraform test

@@ -1,0 +1,55 @@
+name: "iac-tfm: Deploy Content"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "envs/**/content/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  detect:
+    name: Detect changed sites
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: set-matrix
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD \
+            | grep -E '^envs/[^/]+/content/[^/]+/' \
+            | sed -E 's|^envs/[^/]+/content/([^/]+)/.*|\1|' \
+            | sort -u)
+          if [ -z "$CHANGED" ]; then
+            echo "matrix=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MATRIX=$(echo "$CHANGED" | jq -R -s 'split("\n") | map(select(length > 0)) | map({site: .})')
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy ${{ matrix.site }}
+    needs: detect
+    if: needs.detect.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_APPLY_PROD }}
+          aws-region: ap-southeast-2
+
+      - name: Deploy ${{ matrix.site }}
+        run: ./scripts/deploy-site.sh prod ${{ matrix.site }} ./envs/prod/content/${{ matrix.site }}/dist
