@@ -1,21 +1,12 @@
-# --------------------------------------------------------------------------
-# iac-tfm prod env — terraform.tfvars.example
-# Copy to terraform.tfvars and customize.
-# --------------------------------------------------------------------------
-
-# AWS
 aws_region   = "ap-southeast-2"
 project_name = "iac-tfm"
 
-# Env
 environment_name = "prod"
 role_name_prefix = "iac-prod"
-oidc_environment = "production"   # matches GitHub Environment name
+oidc_environment = "production"
 
-# Domain
 primary_domain = "example.com"
 
-# Tags
 owner = "platform-team"
 
 # Alerts
