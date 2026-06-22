@@ -28,4 +28,3 @@ See `variables.tf`.
 | `distribution_id` | CloudFront distribution ID |
 | `distribution_domain_name` | CNAME target |
 | `acm_validation_records` | DNS records to add at registrar |
-| `www_redirect_function_name` | CloudFront Function name (empty if redirect disabled) |

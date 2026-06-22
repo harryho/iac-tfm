@@ -43,16 +43,6 @@ output "alerts_topic_arn" {
   value       = aws_sns_topic.alerts.arn
 }
 
-output "ops_dashboard_name" {
-  description = "CloudWatch operations dashboard name (empty if disabled)"
-  value       = var.enable_ops_dashboard ? aws_cloudwatch_dashboard.ops[0].dashboard_name : ""
-}
-
-output "monthly_budget_name" {
-  description = "AWS Budget name (empty if disabled)"
-  value       = var.enable_cost_budget ? aws_budgets_budget.monthly[0].name : ""
-}
-
 output "team_iam_groups" {
   description = "IAM group names"
   value       = module.team_iam.group_names
@@ -66,16 +56,4 @@ output "github_infra_role_arn" {
 output "github_content_role_arn" {
   description = "GitHub Actions content role ARN for content deploy (env-specific)"
   value       = module.team_iam.github_content_role_arn
-}
-
-output "next_steps" {
-  description = "Manual steps required after apply"
-  value       = <<-EOT
-    1. Add ACM validation CNAMEs at your registrar (see 'sites' output)
-    2. Add DKIM CNAMEs at your registrar (see 'ses_dkim_records' output)
-    3. Add site CNAMEs: <domain> → <distribution_domain>
-    4. Confirm SNS alert email subscription (check inbox)
-    5. Request SES production access in ${var.aws_region} (if not done)
-    6. Deploy content: ../../scripts/deploy-site.sh prod <site-key>
-  EOT
 }
