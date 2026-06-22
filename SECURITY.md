@@ -7,8 +7,9 @@ updates. Older versions are not.
 
 ## Reporting a vulnerability
 
-Please report security issues to **`security@your-domain.example`**
-(replace with your address in your fork) — **do not open a public issue**.
+Please report security issues to **`security@example.com`**
+(substituted to your domain by `scripts/init-from-template.sh`) —
+**do not open a public issue**.
 
 We aim to acknowledge reports within 3 business days and to ship a fix
 within 30 days for critical issues.

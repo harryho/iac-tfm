@@ -7,11 +7,11 @@ Production environment stack. Source of truth for the
 
 ```
 prod/
-├── main.tf                terraform + provider + backend config
+├── main.tf                terraform + provider (backend config commented)
 ├── variables.tf           env_name, primary_domain, sites, etc.
 ├── outputs.tf             per-site outputs
 ├── infra.tf               SES, SNS, budget, dashboard
-├── sites.tf               (now empty — per-site files in sites/)
+├── sites.tf               static_site + contact_form module calls
 ├── team-iam.tf            per-env OIDC roles
 ├── terraform.tfvars.example
 ├── sites/

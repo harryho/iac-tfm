@@ -91,8 +91,8 @@ Re-run `terraform plan` periodically until ACM certs move to `ISSUED`.
 Apply the team-iam module (already part of step 4). Capture the OIDC
 role ARNs from `terraform output`:
 
-- `github_infra_role_arn_<env>`
-- `github_content_role_arn_<env>`
+- `github_infra_role_arn`
+- `github_content_role_arn`
 
 In your GitHub repo → Settings → Environments → `production`, add secrets:
 - `AWS_ROLE_ARN_PLAN_PROD`

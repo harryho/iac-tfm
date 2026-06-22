@@ -33,3 +33,8 @@ All checks must pass.
 
 By contributing, you agree your contributions will be licensed under
 the MIT License.
+
+## Code of conduct
+
+A code of conduct, if desired, can be added from
+[Contributor Covenant](https://www.contributor-covenant.org/).
