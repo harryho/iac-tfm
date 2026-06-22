@@ -18,26 +18,6 @@ locals {
   )
 }
 
-resource "terraform_data" "oidc_placeholders_replaced" {
-  count = var.github_org != "" && var.github_repo != "" ? 1 : 0
-
-  input = {
-    org  = var.github_org
-    repo = var.github_repo
-  }
-
-  lifecycle {
-    precondition {
-      condition     = !startswith(var.github_org, "YOUR_")
-      error_message = "github_org is still the placeholder '${var.github_org}'. Replace it (e.g. in envs/<env>/terraform.tfvars) before applying."
-    }
-    precondition {
-      condition     = !startswith(var.github_repo, "YOUR_")
-      error_message = "github_repo is still the placeholder '${var.github_repo}'. Replace it before applying."
-    }
-  }
-}
-
 resource "aws_iam_group" "admin" {
   name = local.group_names.admin
   path = local.iam_path

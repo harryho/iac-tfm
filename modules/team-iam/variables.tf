@@ -11,21 +11,11 @@ variable "project_name" {
   description = "Project name used for IAM group naming and path scoping"
   type        = string
   default     = "iac-tfm"
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.project_name))
-    error_message = "project_name must be lowercase alphanumeric with hyphens."
-  }
 }
 
 variable "role_name_prefix" {
   description = "Prefix for OIDC role names (e.g. 'iac-prod', 'iac-stage'). Must be unique per env in the same AWS account."
   type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.role_name_prefix))
-    error_message = "role_name_prefix must be lowercase alphanumeric with hyphens."
-  }
 }
 
 variable "oidc_environment" {
