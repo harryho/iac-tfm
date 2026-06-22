@@ -122,6 +122,15 @@ variable "sites" {
     recipient_email     = optional(string)
   }))
   default = {}
+
+  validation {
+    condition = alltrue([
+      for k, s in var.sites :
+      !try(s.enable_contact_form, true)
+      || coalesce(try(s.recipient_email, ""), var.alert_email) != ""
+    ])
+    error_message = "every site with enable_contact_form=true needs a recipient_email (or set var.alert_email as fallback)."
+  }
 }
 
 variable "team_members" {
