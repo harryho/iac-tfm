@@ -1,7 +1,7 @@
 ---
 name: "I'm using this template and..."
 about: Questions or feedback from someone using iac-tfm in a real project
-title: ""
+title: "[question] "
 labels: ["question"]
 ---
 

@@ -16,7 +16,7 @@
 ### `bootstrap/`
 - S3 bucket for Terraform state (versioned, encrypted, lifecycle rules)
 - DynamoDB table for state locking
-- Outputs: bucket name, lock table ARN, key prefix
+- Outputs: backend config block + state bucket name
 
 ### `modules/static-site/`
 - S3 bucket (private, OAC-only access)
@@ -56,7 +56,7 @@ Destroying an env: see `scripts/teardown-env.sh`.
 
 Five GitHub Actions workflows, all OIDC:
 
-- `iac-plan.yml` — PR plan, posts result as comment
+- `iac-plan.yml` — PR plan against every stack
 - `iac-apply.yml` — apply on main, gated by GitHub Environment
 - `deploy-content.yml` — content sync, matrix over env+site
 - `iac-test.yml` — `terraform test` on every PR

@@ -81,21 +81,21 @@ cp -r "envs/$SOURCE_ENV" "envs/$NEW_ENV"
 
 # Rewrite role_name_prefix
 if [ "$CHANGE_ROLE_PREFIX" = true ]; then
-  # Default in template is "iac-prod"; replace with iac-<new_env>
-  sed -i '' "s/role_name_prefix = \"iac-$SOURCE_ENV\"/role_name_prefix = \"iac-$NEW_ENV\"/g" \
+  sed -i.bak "s/role_name_prefix = \"iac-$SOURCE_ENV\"/role_name_prefix = \"iac-$NEW_ENV\"/g" \
     "envs/$NEW_ENV/variables.tf" \
     "envs/$NEW_ENV/terraform.tfvars.example" 2>/dev/null || true
 
-  # Also handle the case where it's commented out
-  sed -i '' "s/# role_name_prefix = \"iac-$SOURCE_ENV\"/# role_name_prefix = \"iac-$NEW_ENV\"/g" \
+  sed -i.bak "s/# role_name_prefix = \"iac-$SOURCE_ENV\"/# role_name_prefix = \"iac-$NEW_ENV\"/g" \
     "envs/$NEW_ENV/variables.tf" \
     "envs/$NEW_ENV/terraform.tfvars.example" 2>/dev/null || true
+  rm -f envs/$NEW_ENV/*.bak
 fi
 
 # Rewrite environment_name
-sed -i '' "s/^environment_name = \"$SOURCE_ENV\"/environment_name = \"$NEW_ENV\"/g" \
+sed -i.bak "s/^environment_name = \"$SOURCE_ENV\"/environment_name = \"$NEW_ENV\"/g" \
   "envs/$NEW_ENV/variables.tf" \
   "envs/$NEW_ENV/terraform.tfvars.example" 2>/dev/null || true
+rm -f envs/$NEW_ENV/*.bak
 
 # Handle content
 if [ "$COPY_CONTENT" = false ]; then
@@ -103,13 +103,8 @@ if [ "$COPY_CONTENT" = false ]; then
   mkdir -p "envs/$NEW_ENV/content"
 fi
 
-# Handle sites
-if [ "$ENABLE_SITES" = false ]; then
-  # Ensure site files are still underscore-prefixed (default after copy)
-  for f in "envs/$NEW_ENV"/sites/_*.tf; do
-    [ -f "$f" ] || continue
-  done
-fi
+# Handle sites — copied site files keep their underscore prefix unless
+# --enable-sites was passed (handled below in the next-steps hint).
 
 # Generate per-env GitHub Environment secret names
 SECRET_PLAN="AWS_ROLE_ARN_PLAN_$(echo "$NEW_ENV" | tr '[:lower:]' '[:upper:]')"

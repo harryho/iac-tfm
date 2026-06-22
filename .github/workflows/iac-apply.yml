@@ -14,6 +14,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: iac-apply-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   apply:
     name: Apply ${{ matrix.stack }}

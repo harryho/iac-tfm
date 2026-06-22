@@ -16,6 +16,8 @@ locals {
     ) : (
     "repo:${var.github_org}/${var.github_repo}:*"
   )
+
+  team_members_map = { for m in var.team_members : m.name => m }
 }
 
 resource "aws_iam_group" "admin" {
@@ -221,7 +223,7 @@ resource "aws_iam_group_policy" "tester_invoke" {
 }
 
 resource "aws_iam_user" "members" {
-  for_each = { for m in var.team_members : m.name => m }
+  for_each = local.team_members_map
 
   name = each.value.name
   path = local.iam_path
@@ -233,14 +235,14 @@ resource "aws_iam_user" "members" {
 }
 
 resource "aws_iam_user_login_profile" "members" {
-  for_each = var.enable_console_login ? { for m in var.team_members : m.name => m } : {}
+  for_each = var.enable_console_login ? local.team_members_map : {}
 
   user                    = aws_iam_user.members[each.key].name
   password_reset_required = true
 }
 
 resource "aws_iam_user_group_membership" "members" {
-  for_each = { for m in var.team_members : m.name => m }
+  for_each = local.team_members_map
 
   user   = aws_iam_user.members[each.key].name
   groups = [local.group_names[each.value.role]]
