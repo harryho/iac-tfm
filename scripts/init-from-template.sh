@@ -14,9 +14,8 @@ else
 fi
 
 prompt() {
-  local _var_name="$1"
-  local prompt_text="$2"
-  local default="${3:-}"
+  local prompt_text="$1"
+  local default="${2:-}"
   local value
   if [ -n "$default" ]; then
     read -r -p "$prompt_text [$default]: " value
@@ -29,11 +28,11 @@ prompt() {
   echo "$value"
 }
 
-PROJECT_NAME=$(prompt project_name "Project name (lowercase, alphanumeric + hyphens)" "iac-tfm")
-AWS_REGION=$(prompt aws_region "Primary AWS region" "ap-southeast-2")
-GITHUB_ORG=$(prompt github_org "GitHub org/user (no YOUR_ prefix)")
-PRIMARY_DOMAIN=$(prompt primary_domain "Primary domain (e.g. example.com)")
-ALERT_EMAIL=$(prompt alert_email "SES alert email (or blank to skip)" "")
+PROJECT_NAME=$(prompt "Project name (lowercase, alphanumeric + hyphens)" "iac-tfm")
+AWS_REGION=$(prompt "Primary AWS region" "ap-southeast-2")
+GITHUB_ORG=$(prompt "GitHub org/user (no YOUR_ prefix)")
+PRIMARY_DOMAIN=$(prompt "Primary domain (e.g. example.com)")
+ALERT_EMAIL=$(prompt "SES alert email (or blank to skip)" "")
 
 echo ""
 echo "About to substitute placeholders across the repo:"
@@ -46,15 +45,16 @@ echo ""
 read -r -p "Proceed? [y/N] " confirm
 [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { echo "Aborted."; exit 1; }
 
-# Substitute
+# Substitute (portable sed: .bak + cleanup works on both GNU and BSD)
 find . -type f \( -name "*.md" -o -name "*.tf" -o -name "*.tfvars*" -o -name "*.yml" -o -name "*.yaml" -o -name "*.sh" \) \
   -not -path "./.git/*" \
-  -exec sed -i '' \
+  -exec sed -i.bak \
     -e "s/example\.com/$PRIMARY_DOMAIN/g" \
     -e "s/YOUR_ORG/$GITHUB_ORG/g" \
     -e "s/YOUR_REPO/$PROJECT_NAME/g" \
     -e "s/ap-southeast-2/$AWS_REGION/g" \
     {} +
+find . -type f -name "*.bak" -not -path "./.git/*" -delete
 
 echo ""
 echo "Done. Next steps:"

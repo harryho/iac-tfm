@@ -6,9 +6,8 @@ required_ok=1
 
 check() {
   local cmd="$1"
-  local _min_version="${2:-}"
   if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "MISSING: $cmd (install: $3)"
+    echo "MISSING: $cmd (install: $2)"
     required_ok=0
   else
     local ver
@@ -20,12 +19,12 @@ check() {
 echo "Checking prerequisites..."
 echo ""
 
-check aws      ""      "https://aws.amazon.com/cli/"
-check terraform "1.10"  "https://developer.hashicorp.com/terraform/install"
-check gh       ""      "https://cli.github.com/"
-check jq       ""      "brew install jq  |  apt install jq"
-check openssl  ""      "brew install openssl  |  apt install openssl"
-check bash     "4"     "macOS: brew install bash"
+check aws      "https://aws.amazon.com/cli/"
+check terraform "https://developer.hashicorp.com/terraform/install"
+check gh       "https://cli.github.com/"
+check jq       "brew install jq  |  apt install jq"
+check openssl  "brew install openssl  |  apt install openssl"
+check bash     "macOS: brew install bash"
 
 echo ""
 if [ "$required_ok" -eq 0 ]; then
