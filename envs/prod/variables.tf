@@ -99,6 +99,12 @@ variable "enable_ops_dashboard" {
   default     = true
 }
 
+variable "enable_console_login" {
+  description = "Create console login profiles for team members (passwords stored in state)"
+  type        = bool
+  default     = false
+}
+
 variable "turnstile_secret" {
   description = "Cloudflare Turnstile secret key (leave empty to skip captcha)"
   type        = string
@@ -116,6 +122,15 @@ variable "sites" {
     recipient_email     = optional(string)
   }))
   default = {}
+
+  validation {
+    condition = alltrue([
+      for k, s in var.sites :
+      !try(s.enable_contact_form, true)
+      || coalesce(try(s.recipient_email, ""), var.alert_email) != ""
+    ])
+    error_message = "every site with enable_contact_form=true needs a recipient_email (or set var.alert_email as fallback)."
+  }
 }
 
 variable "team_members" {

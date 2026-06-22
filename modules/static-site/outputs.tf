@@ -13,11 +13,6 @@ output "distribution_domain_name" {
   value       = aws_cloudfront_distribution.this.domain_name
 }
 
-output "acm_certificate_arn" {
-  description = "ACM certificate ARN (us-east-1)"
-  value       = aws_acm_certificate.this.arn
-}
-
 output "acm_validation_records" {
   description = "DNS CNAME records to add at your registrar for ACM validation"
   value = [

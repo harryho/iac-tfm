@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 variable "project_name" {
   description = "Project name used for IAM group naming and path scoping"
   type        = string
@@ -46,6 +55,12 @@ variable "enable_mfa_enforcement" {
   description = "Require MFA for admin destructive actions"
   type        = bool
   default     = true
+}
+
+variable "enable_console_login" {
+  description = "Create console login profiles for team members (passwords stored in state)"
+  type        = bool
+  default     = false
 }
 
 variable "github_org" {

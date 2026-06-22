@@ -30,7 +30,6 @@ prompt() {
 }
 
 PROJECT_NAME=$(prompt project_name "Project name (lowercase, alphanumeric + hyphens)" "iac-tfm")
-AWS_ACCOUNT_ID=$(prompt aws_account_id "AWS account ID (12 digits)")
 AWS_REGION=$(prompt aws_region "Primary AWS region" "ap-southeast-2")
 GITHUB_ORG=$(prompt github_org "GitHub org/user (no YOUR_ prefix)")
 PRIMARY_DOMAIN=$(prompt primary_domain "Primary domain (e.g. example.com)")
@@ -39,7 +38,6 @@ ALERT_EMAIL=$(prompt alert_email "SES alert email (or blank to skip)" "")
 echo ""
 echo "About to substitute placeholders across the repo:"
 echo "  PROJECT_NAME  = $PROJECT_NAME"
-echo "  AWS_ACCOUNT   = $AWS_ACCOUNT_ID"
 echo "  AWS_REGION    = $AWS_REGION"
 echo "  GITHUB_ORG    = $GITHUB_ORG"
 echo "  PRIMARY_DOMAIN= $PRIMARY_DOMAIN"
@@ -55,7 +53,6 @@ find . -type f \( -name "*.md" -o -name "*.tf" -o -name "*.tfvars*" -o -name "*.
     -e "s/example\.com/$PRIMARY_DOMAIN/g" \
     -e "s/YOUR_ORG/$GITHUB_ORG/g" \
     -e "s/YOUR_REPO/$PROJECT_NAME/g" \
-    -e "s/YOUR_ACCOUNT_ID/$AWS_ACCOUNT_ID/g" \
     -e "s/ap-southeast-2/$AWS_REGION/g" \
     {} +
 

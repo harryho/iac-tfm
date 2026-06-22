@@ -58,16 +58,14 @@ if [ "$FORCE" = true ]; then
   fi
 fi
 
-# 1. Empty S3 buckets tagged with this env
+# 1. Empty S3 buckets owned by this env (read from the env's own outputs)
 echo ""
-echo "Emptying S3 buckets tagged Env=$ENV_NAME ..."
-BUCKETS=$(aws resourcegroupstaggingapi get-resources \
-  --tag-filters "Key=Env,Values=$ENV_NAME" "Key=ManagedBy,Values=terraform" \
-  --resource-type-filters "s3" \
-  --query 'ResourceTagMappingList[].ResourceARN' --output text 2>/dev/null || true)
+echo "Emptying S3 buckets from env '$ENV_NAME' outputs ..."
+cd "envs/$ENV_NAME"
+SITE_BUCKETS=$(terraform output -json sites 2>/dev/null | jq -r '.[].bucket_name // empty' 2>/dev/null || true)
+cd "$REPO_ROOT"
 
-for arn in $BUCKETS; do
-  bucket="${arn#arn:aws:s3:::}"
+for bucket in $SITE_BUCKETS; do
   echo "  emptying s3://$bucket"
   aws s3 rm "s3://$bucket" --recursive --quiet || true
 done
@@ -76,7 +74,7 @@ done
 echo ""
 echo "Running terraform destroy in envs/$ENV_NAME ..."
 cd "envs/$ENV_NAME"
-terraform init -upgrade -input=false >/dev/null
+terraform init -input=false >/dev/null
 terraform destroy -auto-approve -input=false
 cd "$REPO_ROOT"
 
@@ -84,11 +82,12 @@ cd "$REPO_ROOT"
 if [ "$NO_STATE_CLEANUP" = false ]; then
   echo ""
   echo "Cleaning up state files for env '$ENV_NAME' ..."
-  STATE_BUCKET=$(terraform -chdir=bootstrap output -raw state_bucket_arn 2>/dev/null | sed 's/.*:://' || echo "")
+  STATE_BUCKET=$(terraform -chdir=bootstrap output -raw state_bucket_name 2>/dev/null || true)
   if [ -n "$STATE_BUCKET" ]; then
     aws s3 rm "s3://$STATE_BUCKET/envs/$ENV_NAME/" --recursive --quiet || true
   else
-    echo "  (could not determine state bucket — skipping)"
+    echo "  (could not read state bucket from bootstrap output — skipping)"
+    echo "  If bootstrap is not accessible from this role, set STATE_BUCKET manually."
   fi
 fi
 

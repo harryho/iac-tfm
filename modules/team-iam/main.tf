@@ -198,7 +198,7 @@ resource "aws_iam_group_policy" "developer" {
 # Tester policy — read-only + Lambda invoke for contact forms
 # --------------------------------------------------------------------------
 resource "aws_iam_group_policy" "tester_viewonly" {
-  name  = "read-only-iac-tfm"
+  name  = "read-only-${var.project_name}"
   group = aws_iam_group.tester.name
 
   policy = jsonencode({
@@ -277,7 +277,7 @@ resource "aws_iam_user" "members" {
 }
 
 resource "aws_iam_user_login_profile" "members" {
-  for_each = { for m in var.team_members : m.name => m }
+  for_each = var.enable_console_login ? { for m in var.team_members : m.name => m } : {}
 
   user                    = aws_iam_user.members[each.key].name
   password_reset_required = true
@@ -310,10 +310,9 @@ resource "aws_iam_account_password_policy" "this" {
 # trust policy uses oidc_sub_condition.
 # --------------------------------------------------------------------------
 resource "aws_iam_openid_connect_provider" "github" {
-  count           = var.github_org != "" && var.github_repo != "" ? 1 : 0
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["1b58db2c8c81e5d343c31695c1c0e1f2a31379e5"]
+  count          = var.github_org != "" && var.github_repo != "" ? 1 : 0
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }
 
 resource "aws_iam_role" "github_content" {
@@ -377,8 +376,8 @@ resource "aws_iam_role_policy" "github_content" {
           "s3:GetObjectVersion"
         ]
         Resource = [
-          "arn:aws:s3:::${var.project_name}-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}",
-          "arn:aws:s3:::${var.project_name}-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}/*"
+          "arn:aws:s3:::${var.project_name}-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}",
+          "arn:aws:s3:::${var.project_name}-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/*"
         ]
       },
       {

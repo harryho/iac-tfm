@@ -38,16 +38,15 @@ cd YOUR_REPO
 
 The script will prompt for:
 - project name (used in resource naming and tags)
-- AWS account ID
 - primary region
 - GitHub org / repo
 - primary domain (e.g. `example.com`)
 - SES notification email
 - GitHub Environment name (e.g. `production`)
 
-It will rewrite all `example.com`, `YOUR_ORG`, `YOUR_ACCOUNT_ID`
-placeholders across the repo. Idempotent — refuses to run if already
-substituted.
+It will rewrite all `example.com`, `YOUR_ORG`, `YOUR_REPO`,
+`ap-southeast-2` placeholders across the repo. Idempotent — refuses to
+run if already substituted.
 
 After it finishes, edit `envs/prod/sites/_example-com.tf` (drop the
 underscore prefix) to enable the first site.

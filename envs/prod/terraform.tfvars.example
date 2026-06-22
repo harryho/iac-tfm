@@ -49,6 +49,9 @@ sites = {
 #   { name = "alice", role = "admin", email = "alice@example.com" },
 # ]
 
+# Console login (defaults to false — passwords land in state if enabled)
+# enable_console_login = true
+
 # GitHub OIDC — REPLACE the placeholders below before applying
 github_org  = "YOUR_ORG"
 github_repo = "iac-tfm"
