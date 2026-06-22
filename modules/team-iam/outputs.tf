@@ -31,8 +31,6 @@ output "user_arns" {
   }
 }
 
-# ADAPTED: output names include role_name_prefix to disambiguate
-# multi-env outputs at the root level.
 output "github_content_role_arn" {
   description = "GitHub Actions content deploy role ARN (empty if OIDC not configured)"
   value       = var.github_org != "" && var.github_repo != "" ? aws_iam_role.github_content[0].arn : ""

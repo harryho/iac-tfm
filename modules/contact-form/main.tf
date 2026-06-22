@@ -5,9 +5,6 @@ locals {
   site_tags     = merge(var.common_tags, { Site = var.site_domain })
 }
 
-# --------------------------------------------------------------------------
-# DynamoDB table for submission logging (optional)
-# --------------------------------------------------------------------------
 resource "aws_dynamodb_table" "submissions" {
   count        = var.enable_submission_log ? 1 : 0
   name         = "contact-submissions-${replace(var.site_domain, ".", "-")}"
@@ -28,9 +25,6 @@ resource "aws_dynamodb_table" "submissions" {
   tags = local.site_tags
 }
 
-# --------------------------------------------------------------------------
-# CloudWatch Log Group
-# --------------------------------------------------------------------------
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/aws/lambda/${local.function_name}"
   retention_in_days = var.log_retention_days
@@ -38,9 +32,6 @@ resource "aws_cloudwatch_log_group" "this" {
   tags = local.site_tags
 }
 
-# --------------------------------------------------------------------------
-# IAM Role — least privilege: SES send + DynamoDB put + CloudWatch logs
-# --------------------------------------------------------------------------
 resource "aws_iam_role" "this" {
   name = "${local.function_name}-role"
 
@@ -112,9 +103,6 @@ resource "aws_iam_role_policy" "logs" {
   })
 }
 
-# --------------------------------------------------------------------------
-# Lambda Function
-# --------------------------------------------------------------------------
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/src"
@@ -148,9 +136,6 @@ resource "aws_lambda_function" "this" {
   tags = local.site_tags
 }
 
-# --------------------------------------------------------------------------
-# Lambda Function URL (public endpoint, CORS locked to site domain)
-# --------------------------------------------------------------------------
 resource "aws_lambda_function_url" "this" {
   function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
@@ -169,9 +154,6 @@ resource "aws_lambda_permission" "invoke_via_function_url" {
   principal     = "*"
 }
 
-# --------------------------------------------------------------------------
-# CloudWatch Alarm — error rate
-# --------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "errors" {
   count = var.enable_error_alarm ? 1 : 0
 

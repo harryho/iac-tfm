@@ -8,9 +8,6 @@ locals {
   site_tags   = merge(var.common_tags, { Site = var.domain })
 }
 
-# --------------------------------------------------------------------------
-# S3 Origin Bucket (private — served only via CloudFront OAC)
-# --------------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = local.bucket_name
 
@@ -59,9 +56,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
   }
 }
 
-# --------------------------------------------------------------------------
-# CloudFront Origin Access Control (OAC)
-# --------------------------------------------------------------------------
 resource "aws_cloudfront_origin_access_control" "this" {
   name                              = var.domain
   description                       = "OAC for ${var.domain}"
@@ -70,7 +64,6 @@ resource "aws_cloudfront_origin_access_control" "this" {
   signing_protocol                  = "sigv4"
 }
 
-# S3 bucket policy — allow only this distribution via OAC
 resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -93,9 +86,6 @@ resource "aws_s3_bucket_policy" "this" {
   })
 }
 
-# --------------------------------------------------------------------------
-# ACM Certificate (must be in us-east-1 for CloudFront)
-# --------------------------------------------------------------------------
 resource "aws_acm_certificate" "this" {
   provider                  = aws.us_east_1
   domain_name               = var.domain
@@ -118,9 +108,6 @@ resource "aws_acm_certificate_validation" "this" {
   }
 }
 
-# --------------------------------------------------------------------------
-# CloudFront Function — www to apex redirect (ES5.1 for CloudFront runtime)
-# --------------------------------------------------------------------------
 resource "aws_cloudfront_function" "www_redirect" {
   count   = var.enable_www_redirect ? 1 : 0
   name    = "www-redirect-${replace(var.domain, ".", "-")}"
@@ -146,9 +133,6 @@ resource "aws_cloudfront_function" "www_redirect" {
   JS
 }
 
-# --------------------------------------------------------------------------
-# CloudFront Distribution
-# --------------------------------------------------------------------------
 resource "aws_cloudfront_distribution" "this" {
   enabled             = true
   is_ipv6_enabled     = true
