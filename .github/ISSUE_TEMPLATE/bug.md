@@ -12,10 +12,7 @@ What went wrong? (error message, screenshot, log snippet)
 ## How to reproduce
 
 Steps to reproduce the issue. The smaller the reproducer, the better.
-
-```bash
-# Commands you ran
-```
+Include the exact commands you ran.
 
 ## Expected
 

@@ -1,7 +1,7 @@
 # iac-tfm
 
-> IaC Repo based on Terraform — a public template for hosting static sites on AWS
-> with OIDC-based CI/CD, per-site contact forms, and an ops baseline.
+A public template for hosting static sites on AWS with OIDC-based CI/CD,
+per-site contact forms, and an ops baseline.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Terraform 1.10+](https://img.shields.io/badge/Terraform-1.10+-623CE4.svg)](https://www.terraform.io/)
