@@ -12,7 +12,10 @@ on:
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
+
+concurrency:
+  group: iac-plan-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   plan:
