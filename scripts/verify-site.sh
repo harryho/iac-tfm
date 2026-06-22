@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 # verify-site.sh — smoke test a deployed site
 #
-# Usage: verify-site.sh <env_name> <site_key>
+# Usage: verify-site.sh [--with-contact-form] <env_name> <site_key>
 # Example: verify-site.sh prod example-com
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENV_NAME="${1:?Usage: verify-site.sh <env_name> <site_key>}"
-SITE_KEY="${2:?Usage: verify-site.sh <env_name> <site_key>}"
+WITH_CONTACT_FORM=false
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --with-contact-form) WITH_CONTACT_FORM=true; shift ;;
+    -*) echo "Unknown option: $1"; exit 1 ;;
+    *) break ;;
+  esac
+done
+
+ENV_NAME="${1:?Usage: verify-site.sh [--with-contact-form] <env_name> <site_key>}"
+SITE_KEY="${2:?Usage: verify-site.sh [--with-contact-form] <env_name> <site_key>}"
 TF_DIR="${REPO_ROOT}/envs/${ENV_NAME}"
 
 if [ ! -d "$TF_DIR" ]; then
@@ -68,7 +78,7 @@ else
   echo "${NOT_FOUND}"
 fi
 
-if [ -n "$CF_URL" ] && [ "$CF_URL" != "null" ]; then
+if [ "$WITH_CONTACT_FORM" = true ] && [ -n "$CF_URL" ] && [ "$CF_URL" != "null" ]; then
   echo -n "Contact form:         "
   CF_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
     -X POST -H "Content-Type: application/json" \
@@ -83,7 +93,7 @@ if [ -n "$CF_URL" ] && [ "$CF_URL" != "null" ]; then
     echo "CHECK (${CF_STATUS})"
   fi
 else
-  echo "Contact form:         skipped (not enabled for this site)"
+  echo "Contact form:         skipped (use --with-contact-form to enable; sends email + writes to DynamoDB)"
 fi
 
 echo "========================================="
