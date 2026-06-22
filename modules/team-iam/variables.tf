@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 variable "project_name" {
   description = "Project name used for IAM group naming and path scoping"
   type        = string
