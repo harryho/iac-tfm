@@ -99,6 +99,12 @@ variable "enable_ops_dashboard" {
   default     = true
 }
 
+variable "enable_console_login" {
+  description = "Create console login profiles for team members (passwords stored in state)"
+  type        = bool
+  default     = false
+}
+
 variable "turnstile_secret" {
   description = "Cloudflare Turnstile secret key (leave empty to skip captcha)"
   type        = string

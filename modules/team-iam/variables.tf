@@ -48,6 +48,12 @@ variable "enable_mfa_enforcement" {
   default     = true
 }
 
+variable "enable_console_login" {
+  description = "Create console login profiles for team members (passwords stored in state)"
+  type        = bool
+  default     = false
+}
+
 variable "github_org" {
   description = "GitHub org/username for OIDC trust (leave empty to skip CI roles)"
   type        = string
