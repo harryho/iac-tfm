@@ -310,10 +310,9 @@ resource "aws_iam_account_password_policy" "this" {
 # trust policy uses oidc_sub_condition.
 # --------------------------------------------------------------------------
 resource "aws_iam_openid_connect_provider" "github" {
-  count           = var.github_org != "" && var.github_repo != "" ? 1 : 0
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["1b58db2c8c81e5d343c31695c1c0e1f2a31379e5"]
+  count          = var.github_org != "" && var.github_repo != "" ? 1 : 0
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }
 
 resource "aws_iam_role" "github_content" {
