@@ -1,6 +1,3 @@
-# --------------------------------------------------------------------------
-# SES domain identity — one per project (covers all subdomains)
-# --------------------------------------------------------------------------
 resource "aws_ses_domain_identity" "this" {
   domain = var.primary_domain
 }
@@ -9,9 +6,6 @@ resource "aws_ses_domain_dkim" "this" {
   domain = aws_ses_domain_identity.this.domain
 }
 
-# --------------------------------------------------------------------------
-# SNS alerts topic — for Lambda error alarms
-# --------------------------------------------------------------------------
 resource "aws_sns_topic" "alerts" {
   name              = "${var.project_name}-alerts"
   display_name      = "${var.project_name} Alerts"

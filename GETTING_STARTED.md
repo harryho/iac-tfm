@@ -74,21 +74,25 @@ terraform plan
 
 Expect: ACM certificates requested, CloudFront distributions created.
 
-## 5. Point DNS
+## 5. Point DNS and finish setup
 
-In your registrar, add:
-- ACM validation CNAMEs (from `terraform output` → `acm_validation_records`)
-- Apex + `www` ALIAS / CNAME → your CloudFront distribution domain
+After first apply, complete these post-deploy tasks:
 
-Re-run `terraform plan` periodically until certs move to `ISSUED`.
+- ACM validation CNAMEs (from `terraform output sites` → `acm_validation_records`)
+- DKIM CNAMEs (from `terraform output ses_dkim_records`)
+- Site CNAMEs: `<domain>` → CloudFront distribution domain
+- Confirm SNS alert email subscription (check inbox)
+- Request SES production access in your region if not done
+
+Re-run `terraform plan` periodically until ACM certs move to `ISSUED`.
 
 ## 6. Add CI/CD
 
 Apply the team-iam module (already part of step 4). Capture the OIDC
 role ARNs from `terraform output`:
 
-- `github_infra_role_arn_<env>`
-- `github_content_role_arn_<env>`
+- `github_infra_role_arn`
+- `github_content_role_arn`
 
 In your GitHub repo → Settings → Environments → `production`, add secrets:
 - `AWS_ROLE_ARN_PLAN_PROD`

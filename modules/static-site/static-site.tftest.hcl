@@ -21,32 +21,38 @@ mock_provider "aws" {
 
 mock_provider "aws" {
   alias = "us_east_1"
+
+  mock_data "aws_region" {
+    defaults = {
+      name = "us-east-1"
+    }
+  }
 }
 
-run "creates_one_cloudfront" {
+run "cloudfront_enabled" {
   command = plan
 
   assert {
     condition     = aws_cloudfront_distribution.this.enabled == true
-    error_message = "module must create exactly one CloudFront distribution"
+    error_message = "cloudfront enabled"
   }
 }
 
-run "creates_one_s3_bucket" {
+run "s3_bucket_named" {
   command = plan
 
   assert {
     condition     = aws_s3_bucket.this.bucket == "example-com-123456789012"
-    error_message = "module must create exactly one S3 bucket"
+    error_message = "s3 bucket name"
   }
 }
 
-run "creates_one_acm_certificate" {
+run "acm_domain" {
   command = plan
 
   assert {
     condition     = aws_acm_certificate.this.domain_name == "example.com"
-    error_message = "module must create exactly one ACM certificate"
+    error_message = "acm domain"
   }
 }
 
@@ -55,12 +61,12 @@ run "s3_bucket_blocks_public_access" {
 
   assert {
     condition     = aws_s3_bucket_public_access_block.this.block_public_acls == true
-    error_message = "S3 bucket must block public ACLs"
+    error_message = "block_public_acls"
   }
 
   assert {
     condition     = aws_s3_bucket_public_access_block.this.restrict_public_buckets == true
-    error_message = "S3 bucket must restrict public buckets"
+    error_message = "restrict_public_buckets"
   }
 }
 
@@ -69,6 +75,6 @@ run "oac_signing_behavior_always" {
 
   assert {
     condition     = aws_cloudfront_origin_access_control.this.signing_behavior == "always"
-    error_message = "OAC signing behavior must be 'always'"
+    error_message = "signing_behavior"
   }
 }

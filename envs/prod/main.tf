@@ -20,9 +20,6 @@ terraform {
   # }
 }
 
-# --------------------------------------------------------------------------
-# Providers — default (primary region) + alias (us-east-1 for ACM)
-# --------------------------------------------------------------------------
 provider "aws" {
   region = var.aws_region
 
@@ -36,19 +33,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# --------------------------------------------------------------------------
-# Data sources
-# --------------------------------------------------------------------------
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-# --------------------------------------------------------------------------
-# Locals
-# --------------------------------------------------------------------------
 locals {
-  account_id = data.aws_caller_identity.current.account_id
-  region     = data.aws_region.current.name
-
   common_tags = {
     Project   = var.project_name
     Env       = var.environment_name

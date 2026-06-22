@@ -24,8 +24,3 @@ output "acm_validation_records" {
     }
   ]
 }
-
-output "www_redirect_function_name" {
-  description = "CloudFront Function name for www redirect (empty if disabled)"
-  value       = var.enable_www_redirect ? aws_cloudfront_function.www_redirect[0].name : ""
-}

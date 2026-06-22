@@ -13,33 +13,18 @@ variable "project_name" {
   description = "Project name used in resource naming and tags"
   type        = string
   default     = "iac-tfm"
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.project_name))
-    error_message = "project_name must be lowercase alphanumeric with hyphens only."
-  }
 }
 
 variable "environment_name" {
   description = "Short env identifier (e.g. prod, stage, dev). Used in state path and the Env tag."
   type        = string
   default     = "prod"
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.environment_name))
-    error_message = "environment_name must be lowercase alphanumeric with hyphens only."
-  }
 }
 
 variable "role_name_prefix" {
   description = "Prefix for OIDC role names. Must be unique per env in the same AWS account (e.g. 'iac-prod', 'iac-stage')."
   type        = string
   default     = "iac-prod"
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.role_name_prefix))
-    error_message = "role_name_prefix must be lowercase alphanumeric with hyphens only."
-  }
 }
 
 variable "oidc_environment" {
@@ -80,11 +65,6 @@ variable "monthly_budget_limit_usd" {
   description = "Monthly cost budget limit in USD"
   type        = number
   default     = 5
-
-  validation {
-    condition     = var.monthly_budget_limit_usd > 0
-    error_message = "monthly_budget_limit_usd must be greater than 0."
-  }
 }
 
 variable "enable_cost_budget" {

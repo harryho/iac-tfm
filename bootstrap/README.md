@@ -12,6 +12,4 @@ terraform apply
 
 Outputs:
 - `backend_config` — values for the `backend "s3"` block in envs/<env>/
-- `state_bucket_arn`
-- `lock_table_arn`
-- `state_key_prefix` — `envs` (state files go under `envs/<env>/terraform.tfstate`)
+- `state_bucket_name` — for teardown scripts

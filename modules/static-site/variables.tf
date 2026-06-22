@@ -11,11 +11,6 @@ terraform {
 variable "domain" {
   description = "Primary domain name (e.g. example.com)"
   type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$", var.domain))
-    error_message = "domain must be a valid lowercase FQDN (e.g. example.com)."
-  }
 }
 
 variable "enable_www_redirect" {

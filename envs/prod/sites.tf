@@ -1,6 +1,3 @@
-# --------------------------------------------------------------------------
-# Static sites — one module call per entry in var.sites
-# --------------------------------------------------------------------------
 module "static_site" {
   source   = "../../modules/static-site"
   for_each = var.sites
@@ -16,9 +13,6 @@ module "static_site" {
   common_tags         = local.common_tags
 }
 
-# --------------------------------------------------------------------------
-# Contact forms — one per site that has contact form enabled
-# --------------------------------------------------------------------------
 module "contact_form" {
   source = "../../modules/contact-form"
   for_each = {
