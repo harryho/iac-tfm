@@ -198,7 +198,7 @@ resource "aws_iam_group_policy" "developer" {
 # Tester policy — read-only + Lambda invoke for contact forms
 # --------------------------------------------------------------------------
 resource "aws_iam_group_policy" "tester_viewonly" {
-  name  = "read-only-iac-tfm"
+  name  = "read-only-${var.project_name}"
   group = aws_iam_group.tester.name
 
   policy = jsonencode({
