@@ -27,6 +27,5 @@ See `variables.tf`.
 | `bucket_name` | S3 bucket for content |
 | `distribution_id` | CloudFront distribution ID |
 | `distribution_domain_name` | CNAME target |
-| `acm_certificate_arn` | ACM cert (us-east-1) |
 | `acm_validation_records` | DNS records to add at registrar |
 | `www_redirect_function_name` | CloudFront Function name (empty if redirect disabled) |
