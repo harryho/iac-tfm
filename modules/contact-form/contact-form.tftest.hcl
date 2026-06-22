@@ -55,7 +55,7 @@ run "iam_permission_for_function_url" {
   }
 }
 
-run "dynamodb_table_has_ttl_attribute" {
+run "dynamodb_table_has_range_key_timestamp" {
   command = plan
 
   variables {
