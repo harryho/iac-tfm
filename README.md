@@ -1,84 +1,46 @@
 # iac-tfm
 
-A public template for hosting static sites on AWS with OIDC-based CI/CD,
-per-site contact forms, and an ops baseline.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Terraform 1.10+](https://img.shields.io/badge/Terraform-1.10+-623CE4.svg)](https://www.terraform.io/)
-
-## What you get
-
-- **Multi-site, multi-environment** — directory-based envs (`envs/<env>/`),
-  file-per-site, copy a working env to add another in one command
-- **Static sites on AWS** — CloudFront + S3 (private, OAC) + ACM (us-east-1)
-- **Per-site contact form** — Lambda + SES + DynamoDB, Cloudflare Turnstile
-  optional
-- **OIDC-only CI/CD** — no long-lived AWS keys, GitHub Environments map 1:1
-  to folders
-- **Safe teardown** — `scripts/teardown-env.sh` empties S3, destroys, and
-  cleans up state in one command (with confirmation)
-- **Ops baseline** — CloudWatch dashboard, AWS Budget, SNS alerts
-
-## Quickstart
-
-See [`GETTING_STARTED.md`](GETTING_STARTED.md) for the full step-by-step.
-
-```bash
-# 0. Prereqs
-./scripts/prereqs.sh
-
-# 1. Click "Use this template" on GitHub, then clone your new repo
-git clone https://github.com/YOUR_ORG/iac-tfm.git
-cd iac-tfm
-
-# 2. Make it yours
-./scripts/init-from-template.sh
-
-# 3. Bootstrap state backend
-cd bootstrap && terraform init && terraform apply
-cd ..
-
-# 4. Wire up prod
-cd envs/prod
-terraform init
-terraform plan
-
-# 5. After manual DNS setup, deploy content
-./scripts/deploy-site.sh prod example-com ./envs/prod/content/example-com/dist
-./scripts/verify-site.sh prod example-com
-```
-
-## Layout
+Multi-cloud Terraform templates for static-site hosting. Each cloud lives
+in its own self-contained folder that follows the same shape:
 
 ```
-bootstrap/         S3 + DynamoDB state backend (run once per AWS account)
-modules/           Reusable Terraform modules
-envs/<env>/        Per-environment stacks (envs/prod ships by default)
-scripts/           Helper shell scripts
-.github/workflows/ CI/CD pipelines (OIDC, env-aware)
+<cloud>/
+├── bootstrap/    state backend (run once per cloud account)
+├── modules/      reusable Terraform modules
+├── envs/<env>/   per-environment stacks
+├── scripts/      deploy / verify / teardown helpers
+└── content/<env>/<site>/dist/   static content
 ```
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full design.
+## Implementations
 
-## Add a new environment
+| Folder | Cloud | Status |
+|---|---|---|
+| [`aws-edge/`](aws-edge/) | AWS (CloudFront + S3 + ACM + Lambda + SES) | Original implementation, has known issues from a 2026-06-22 audit |
+| [`az-swa/`](az-swa/) | Azure (Static Web Apps) | Synthesized reference pattern — clone this shape for new clouds |
 
-```bash
-./scripts/replicate-env.sh stage
-# then edit envs/stage/terraform.tfvars, init, plan, apply
-```
+## Conventions
 
-## Tear down an environment
+- **One state backend per cloud account** — `bootstrap/` provisions it once.
+- **Directory-based envs** — `envs/<env>/` is self-contained, easy to compare, easy to tear down. See [ADR 0001](docs/decisions/0001-multi-cloud-layout.md).
+- **OIDC-only CI/CD** — no long-lived cloud credentials in GitHub. AWS side documents this in [`aws-edge/docs/decisions/0001-oidc-only.md`](aws-edge/docs/decisions/0001-oidc-only.md); the same pattern applies to any cloud.
+- **Per-site contact form is optional** — each env's `sites` map can turn it on per site.
 
-```bash
-./scripts/teardown-env.sh stage
-./scripts/teardown-env.sh prod --force   # requires explicit --force for prod
-```
+## Adding a new cloud
+
+1. Copy `az-swa/` as the starting shape.
+2. Replace the provider in `bootstrap/`, `modules/`, and `envs/<env>/`.
+3. Rename modules to match your cloud's naming (the az-swa reference uses generic module names; adapt to your service).
+4. Update scripts for the cloud's deploy/verify/teardown commands.
+5. Add `.github/workflows/` modeled on `aws-edge/.github/workflows/`.
+6. Add a row to the table above and link to the new folder's README.
+
+## Repo-wide docs
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — multi-cloud layout conventions.
+- [`docs/decisions/0001-multi-cloud-layout.md`](docs/decisions/0001-multi-cloud-layout.md) — why each cloud is self-contained.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md) — apply repo-wide.
 
 ## License
 
 [MIT](LICENSE). No warranty; you own what you ship.
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). Bug reports and feature
-requests: use the issue templates in `.github/ISSUE_TEMPLATE/`.
