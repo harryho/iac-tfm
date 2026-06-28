@@ -110,7 +110,7 @@ flowchart TB
     Browser[User browser]:::external
 
     subgraph AWS["AWS account"]
-        direction TB
+        direction LR
         CF["CloudFront + ACM<br/>(us-east-1 cert)"]
         S3[("S3 site bucket<br/>private, OAC")]
         Lambda["Lambda Function URL<br/>contact form (Node 20)"]
