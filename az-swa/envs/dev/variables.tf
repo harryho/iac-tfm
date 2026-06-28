@@ -52,8 +52,9 @@ variable "ses_secret_key" {
 }
 
 variable "ses_region" {
-  type    = string
-  default = "ap-southeast-2"
+  type        = string
+  default     = ""
+  description = "AWS region for SES fallback (only used if acs_connection_string is empty)"
 }
 
 variable "turnstile_secret" {
@@ -73,8 +74,21 @@ variable "github_repo" {
 }
 
 variable "github_branch" {
-  type    = string
-  default = "deploy/azure"
+  type        = string
+  default     = "deploy/azure"
+  description = "Branch push triggers iac-apply and deploy-content workflows"
+}
+
+variable "bootstrap_storage_account_name" {
+  type        = string
+  default     = "azswatfstate"
+  description = "Storage account where bootstrap state lives. Must match the bootstrap module's project_name (default: az-swa → azswatfstate)"
+}
+
+variable "bootstrap_resource_group_name" {
+  type        = string
+  default     = "az-swa-tfstate-rg"
+  description = "Resource group where bootstrap state lives. Must match the bootstrap module's project_name (default: az-swa → az-swa-tfstate-rg)"
 }
 
 variable "sites" {

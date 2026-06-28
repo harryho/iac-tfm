@@ -21,7 +21,11 @@ if [ -z "$SWA_NAME" ]; then
   exit 1
 fi
 
-RG_NAME="$(terraform -chdir="$TF_DIR" output -raw resource_group_name 2>/dev/null || echo "${REPO_ROOT##*/}-${ENV}-rg")"
+RG_NAME="$(terraform -chdir="$TF_DIR" output -raw resource_group_name 2>/dev/null)"
+if [ -z "$RG_NAME" ]; then
+  echo "Error: terraform output 'resource_group_name' not available for env '$ENV'. Run 'terraform apply' first." >&2
+  exit 1
+fi
 TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RG_NAME" --query properties.apiKey -o tsv)
 
 command -v swa >/dev/null || npm install -g @azure/static-web-apps-cli

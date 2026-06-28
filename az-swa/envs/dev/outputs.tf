@@ -25,3 +25,7 @@ output "tenant_id" {
 output "subscription_id" {
   value = length(module.workload_identity) > 0 ? module.workload_identity[0].subscription_id : ""
 }
+
+output "resource_group_name" {
+  value = azurerm_resource_group.main.name
+}

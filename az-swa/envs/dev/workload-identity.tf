@@ -13,8 +13,8 @@ module "workload_identity" {
 
 data "azurerm_storage_account" "tfstate" {
   count               = var.github_org != "" && var.github_repo != "" ? 1 : 0
-  name                = "azswatfstate"
-  resource_group_name = "az-swa-tfstate-rg"
+  name                = var.bootstrap_storage_account_name
+  resource_group_name = var.bootstrap_resource_group_name
 }
 
 resource "azurerm_role_assignment" "infra_tfstate" {
