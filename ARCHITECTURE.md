@@ -28,18 +28,18 @@ exactly what differs), easy to tear down, one env's failure cannot
 corrupt another's state. Slight duplication (each env repeats
 provider/backend config) is the cost of that explicitness.
 
-Why not workspaces or Terragrunt: see
-[`aws-edge/docs/decisions/0002-directory-based-envs.md`](aws-edge/docs/decisions/0002-directory-based-envs.md)
-(decision rationale carries over to other clouds — the same arguments
-apply).
+Why not workspaces or Terragrunt: workspaces share a single backend and
+state file, which makes isolation and side-by-side comparison harder;
+Terragrunt adds an extra dependency and abstraction that conflicts with
+the goal of keeping each env explicit and self-contained.
 
 ### OIDC-only CI/CD
 
 No long-lived cloud credentials in GitHub. Each cloud folder owns its
 own CI workflows (`<cloud>/.github/workflows/`) that assume short-lived
-roles/identities via OIDC federated credentials. AWS-side detail in
-[`aws-edge/docs/decisions/0001-oidc-only.md`](aws-edge/docs/decisions/0001-oidc-only.md);
-the same pattern applies to other clouds.
+roles/identities via OIDC federated credentials. AWS-side setup is covered in
+[`aws-edge/GETTING_STARTED.md`](aws-edge/GETTING_STARTED.md); the same
+pattern applies to other clouds.
 
 ### Per-site contact form is optional
 
@@ -64,23 +64,20 @@ created.
 6. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`,
    adjusting for the cloud's OIDC setup.
 7. Add a row to the table in [`README.md`](README.md).
-8. Optionally add a cloud-specific `<cloud>/ARCHITECTURE.md` and
-   `<cloud>/docs/decisions/` for ADRs that don't carry across clouds.
+8. Optionally add a cloud-specific `<cloud>/ARCHITECTURE.md` for
+   conventions and rationale that don't carry across clouds.
 
 ## What the root owns vs. what each cloud folder owns
 
-**Root** (`README.md`, `ARCHITECTURE.md`, `docs/decisions/`,
-`CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `.editorconfig`, `.gitignore`,
+**Root** (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`,
+`SECURITY.md`, `LICENSE`, `.editorconfig`, `.gitignore`,
 `.pre-commit-config.yaml`):
 
 - Multi-cloud conventions.
-- ADRs that affect more than one cloud.
 - Repo-wide contributor / security policy.
 
 **Each cloud folder** (`<cloud>/README.md`, `<cloud>/ARCHITECTURE.md`,
 `<cloud>/bootstrap/`, `<cloud>/modules/`, `<cloud>/envs/`,
-`<cloud>/scripts/`, `<cloud>/content/`, `<cloud>/.github/`,
-`<cloud>/docs/decisions/`):
+`<cloud>/scripts/`, `<cloud>/content/`, `<cloud>/.github/`):
 
 - Everything cloud-specific: provider, modules, envs, scripts, workflows.
-- ADRs that only matter for that cloud.

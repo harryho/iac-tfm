@@ -1,4 +1,4 @@
-# iac-tfm
+# Terraform Iac Multi-Cloud templates
 
 Multi-cloud Terraform templates for **static-site hosting and adjacent
 web stacks**. Each cloud is a self-contained folder: a state backend,
@@ -34,8 +34,10 @@ The shape:
 ## Conventions
 
 - **One state backend per cloud account** — `<cloud>/bootstrap/` provisions it once.
-- **Directory-based envs** — `<cloud>/envs/<env>/` is self-contained, easy to compare, easy to tear down. See [ADR 0001](docs/decisions/0001-multi-cloud-layout.md).
-- **OIDC-only CI/CD** — no long-lived cloud credentials in GitHub. AWS side documents this in [`aws-edge/docs/decisions/0001-oidc-only.md`](aws-edge/docs/decisions/0001-oidc-only.md); the same pattern applies to any cloud.
+- **Directory-based envs** — `<cloud>/envs/<env>/` is self-contained, easy to compare, easy to tear down.
+- **OIDC-only CI/CD** — no long-lived cloud credentials in GitHub. AWS-side
+  setup is covered in [`aws-edge/GETTING_STARTED.md`](aws-edge/GETTING_STARTED.md);
+  the same pattern applies to any cloud.
 - **Per-site contact form is optional** — each env's `sites` map turns it on per site; contact-form resources only exist when enabled.
 - **Lambdas, Functions, and other serverless compute** ship inside the contact-form module — no separate "compute" folder. The pattern is: per-site API surface, configured via app settings.
 
@@ -51,10 +53,27 @@ The shape:
    or `az-swa/.github/workflows/` — pick whichever cloud is closest.
 6. Add a row to the table above and link to the new folder's README.
 
+## Local development
+
+Install [pre-commit](https://pre-commit.com/) and enable the repo hooks:
+
+```bash
+pre-commit install
+```
+
+Run all hooks manually against every file:
+
+```bash
+pre-commit run --all-files
+```
+
+This runs the same checks used in CI: Terraform formatting and validation,
+YAML/shell linting, and whitespace checks.
+
 ## Repo-wide docs
 
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — multi-cloud layout conventions.
-- [`docs/decisions/0001-multi-cloud-layout.md`](docs/decisions/0001-multi-cloud-layout.md) — why each cloud is self-contained.
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — multi-cloud layout conventions and
+  why each cloud is self-contained.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md) — apply repo-wide.
 
 ## License

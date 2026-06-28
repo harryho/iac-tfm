@@ -5,7 +5,7 @@ repo. CloudFront + S3 + ACM for static sites, Lambda + SES + DynamoDB
 for per-site contact forms, IAM groups + OIDC roles for CI/CD, and an
 ops baseline (CloudWatch dashboard, AWS Budget, SNS alerts).
 
-> Repo-wide overview, ADRs, and contributor docs live one level up at
+> Repo-wide overview and contributor docs live one level up at
 > [`/README.md`](../README.md) and [`/ARCHITECTURE.md`](../ARCHITECTURE.md).
 > Everything below is scoped to AWS.
 
@@ -25,53 +25,13 @@ ops baseline (CloudWatch dashboard, AWS Budget, SNS alerts).
   cleans up state in one command (with confirmation)
 - **Ops baseline** — CloudWatch dashboard, AWS Budget, SNS alerts
 
-## Quickstart
+## Getting started
 
-```bash
-# 0. Prereqs (run from inside aws-edge/)
-./scripts/prereqs.sh
+New here? Follow the **[step-by-step walkthrough →](GETTING_STARTED.md)**
+from template fork to deployed site with CI/CD running.
 
-# 1. Click "Use this template" on GitHub, then clone your new repo
-git clone https://github.com/YOUR_ORG/iac-tfm.git
-cd iac-tfm/aws-edge
-
-# 2. Make it yours. The script prompts for:
-#    project name, primary region, GitHub org, GitHub repo name,
-#    primary domain, SES alert email.
-#    It rewrites example.com, YOUR_ORG, YOUR_REPO, ap-southeast-2
-#    across the tree.
-./scripts/init-from-template.sh
-
-# 3. Bootstrap state backend
-cd bootstrap && terraform init && terraform apply
-cd ..
-
-# 4. Wire up prod
-cd envs/prod
-cp terraform.tfvars.example terraform.tfvars
-$EDITOR terraform.tfvars   # fill in your values
-terraform init
-terraform plan
-
-# 5. Point DNS and finish setup. After first apply:
-#    - ACM validation CNAMEs from `terraform output sites` → acm_validation_records
-#    - DKIM CNAMEs from `terraform output ses_dkim_records`
-#    - Site CNAMEs: <domain> → CloudFront distribution domain
-#    - Confirm SNS alert email subscription (check inbox)
-#    - Request SES production access in your region if not done
-# Re-run `terraform plan` until ACM certs move to ISSUED.
-
-# 6. Add CI/CD. Capture the OIDC role ARNs from `terraform output`:
-#    - github_infra_role_arn, github_content_role_arn
-#    In GitHub repo → Settings → Environments → production, add secrets:
-#    - AWS_ROLE_ARN_PLAN_PROD, AWS_ROLE_ARN_APPLY_PROD
-# Open a PR against main. The iac-plan.yml workflow should fire on the PR.
-
-# 7. Deploy your first site
-cd ../..
-./scripts/deploy-site.sh prod example-com ./envs/prod/content/example-com/dist
-./scripts/verify-site.sh prod example-com
-```
+Already been through it once? The sections below are your reference
+for day-to-day operations.
 
 ## Layout
 
@@ -98,12 +58,121 @@ envs/<env>/                     Per-environment stacks (envs/prod ships by defau
                                 AWS Budget
 scripts/                        Helper shell scripts
 .github/workflows/              CI/CD pipelines (OIDC, env-aware)
-docs/decisions/                 AWS-specific ADRs
 ```
 
 ## Architecture
 
 What runs in AWS, what runs in GitHub, and how traffic + deploys flow.
+
+## Expandable capabilities
+
+### Environments
+
+Each env is a self-contained directory under `envs/<env>/` with its own
+state file (`envs/<env>/terraform.tfstate` inside the shared S3 backend)
+and its own set of sites.
+
+**Add a new environment:**
+
+```bash
+./scripts/replicate-env.sh <env-name>
+cd envs/<env-name>
+cp terraform.tfvars.example terraform.tfvars
+$EDITOR terraform.tfvars   # your values
+terraform init
+terraform plan
+terraform apply
+```
+
+The `replicate-env.sh` script copies the `prod/` directory, so your new
+env inherits all the same module structure. You can then customize the
+variables (domain, region, sites, team members, etc.).
+
+**CI/CD for new environments:**
+
+Each env needs its own GitHub Environment and OIDC role secrets. See the
+[CI/CD setup guide](GETTING_STARTED.md#step-7--set-up-cicd) in the
+walkthrough.
+
+---
+
+### Sites
+
+A site is a domain + optional contact form. Sites are controlled by the
+`sites` map in `terraform.tfvars` and file-per-site config under
+`sites/`.
+
+**Enable a new site:**
+
+1. Create a site config file. The `envs/prod/sites/` directory ships with
+   three underscore-prefixed examples you can copy and rename:
+
+   - `_example-com.tf` — apex marketing site (`www` redirect enabled,
+     contact form enabled by default).
+   - `_app-example-com.tf` — subdomain site (`app.example.com`) with the
+     contact form enabled.
+   - `_blogs-example-com.tf` — subdomain site (`blogs.example.com`) with
+     the contact form disabled by default.
+
+   ```bash
+   cp sites/_example-com.tf sites/my-site.tf
+   # edit the domain in sites/my-site.tf
+   ```
+2. Add an entry to the `sites` map in `terraform.tfvars`:
+   ```hcl
+   sites = {
+     # existing entries...
+     my-site = {
+       domain = "mysite.example.com"
+     }
+   }
+   ```
+3. Create a content directory:
+   ```bash
+   mkdir -p envs/prod/content/my-site/dist
+   # place your built files there
+   ```
+4. Run `terraform plan` and `terraform apply`.
+5. Add the DNS records (ACM validation CNAME + site CNAME) from
+   `terraform output sites`.
+6. Deploy content:
+   ```bash
+   ./scripts/deploy-site.sh prod my-site ./envs/prod/content/my-site/dist
+   ```
+
+**Disable a site:** remove the entry from the `sites` map and run
+`terraform apply` to destroy its resources.
+
+**Underscore-prefix convention:** files named `_<name>.tf` are ignored
+by Terraform. This lets you keep disabled site configs in version
+control. Rename `_my-site.tf` → `my-site.tf` to enable.
+
+---
+
+### Contact forms
+
+Contact forms are per-site and enabled by default. To disable for a
+specific site:
+
+```hcl
+sites = {
+  my-site = {
+    domain              = "mysite.example.com"
+    enable_contact_form = false
+  }
+}
+```
+
+Each enabled site gets:
+- Lambda function (Node 20) with Function URL
+- SES email sending (verify the DKIM CNAMEs first)
+- DynamoDB submissions table
+- CloudWatch log group + error alarm
+- Cloudflare Turnstile (optional — set `turnstile_secret`)
+
+To add a new contact-form site, just leave `enable_contact_form` as the
+default `true` and make sure `recipient_email` is set per-site or
+`alert_email` is set as fallback.
 
 ```mermaid
 flowchart TB

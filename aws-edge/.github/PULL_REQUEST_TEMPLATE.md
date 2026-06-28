@@ -12,7 +12,6 @@ Why is this change needed?
 - [ ] I have run `terraform validate` against the changed dirs
 - [ ] I have run `terraform test` against the changed modules
 - [ ] I have updated the relevant docs (`README.md`, `GETTING_STARTED.md`,
-      `ARCHITECTURE.md`, or `docs/decisions/`)
-- [ ] I have added/changed an ADR if this is a design change
+      or `ARCHITECTURE.md`)
 - [ ] I have not committed any `terraform.tfvars`, `*.tfstate`, or
       `*.tfplan` files
