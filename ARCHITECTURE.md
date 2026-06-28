@@ -13,8 +13,7 @@ has its own `README.md` and `ARCHITECTURE.md` for cloud-specific detail.
 | Environment | `<cloud>/envs/<env>/` | `<cloud>` state backend, per-env key | Once per env per cloud |
 | Module | `<cloud>/modules/<name>/` | (no state) | Called by envs |
 
-`<cloud>/bootstrap/` is independent. `<cloud>/envs/<env>/` reads bootstrap
-outputs via `terraform_remote_state`. Modules are pure code.
+`<cloud>/bootstrap/` is independent. Modules are pure code.
 
 ## Conventions
 

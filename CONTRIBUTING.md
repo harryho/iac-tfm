@@ -4,10 +4,13 @@ Thanks for your interest in improving `iac-tfm`!
 
 ## Issues
 
-- **Bug reports** → use the `.github/ISSUE_TEMPLATE/bug.md` template
-- **Feature requests** → use `.github/ISSUE_TEMPLATE/feature.md`
-- **"I'm using this template and..."** → use
-  `.github/ISSUE_TEMPLATE/using-this-template.md`
+Issue templates live with each cloud's workflows, scoped to that
+cloud's user surface:
+
+- **Bug reports / feature requests / "I'm using this template"** →
+  open in the GitHub UI; `aws-edge/.github/ISSUE_TEMPLATE/` ships
+  the templates, az-swa and future clouds add their own under
+  `<cloud>/.github/ISSUE_TEMPLATE/`.
 
 ## Pull requests
 
