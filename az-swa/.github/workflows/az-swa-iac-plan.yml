@@ -1,0 +1,60 @@
+name: "az-swa: Terraform Plan"
+
+on:
+  pull_request:
+    paths:
+      - "az-swa/envs/**"
+      - "az-swa/modules/**"
+      - "az-swa/.github/workflows/az-swa-iac-plan.yml"
+      - "az-swa/.github/workflows/az-swa-iac-apply.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: az-swa-iac-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Plan dev
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZ_SWA_DEV_INFRA_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_SWA_DEV_TENANT_ID }}
+          subscription-id: ${{ secrets.AZ_SWA_DEV_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform fmt
+        working-directory: az-swa
+        run: terraform fmt -check -recursive
+
+      - name: Write tfvars from secret
+        working-directory: az-swa/envs/dev
+        run: printf '%s' "$TFVARS" > terraform.tfvars
+        env:
+          TFVARS: ${{ secrets.AZ_SWA_DEV_TFVARS }}
+
+      - name: Terraform init
+        working-directory: az-swa/envs/dev
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform validate
+        working-directory: az-swa/envs/dev
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: az-swa/envs/dev
+        run: terraform plan -input=false -no-color

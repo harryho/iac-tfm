@@ -1,0 +1,64 @@
+name: "iac-tfm: Terraform Apply"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aws-edge/bootstrap/**"
+      - "aws-edge/envs/**"
+      - "aws-edge/modules/**"
+      - "aws-edge/.github/workflows/iac-apply.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: iac-apply-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: Apply ${{ matrix.stack }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - dir: aws-edge/bootstrap
+            env: bootstrap
+            role_secret: AWS_ROLE_ARN_APPLY_BOOTSTRAP
+            environment: ""
+          - dir: aws-edge/envs/prod
+            env: prod
+            role_secret: AWS_ROLE_ARN_APPLY_PROD
+            environment: production
+
+    environment: ${{ matrix.stack.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets[matrix.stack.role_secret] }}
+          aws-region: ap-southeast-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform init
+        working-directory: ${{ matrix.stack.dir }}
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: ${{ matrix.stack.dir }}
+        run: terraform validate
+
+      - name: Terraform apply
+        working-directory: ${{ matrix.stack.dir }}
+        run: terraform apply -auto-approve

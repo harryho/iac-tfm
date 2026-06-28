@@ -1,0 +1,16 @@
+azure_location = "eastasia"
+project_name   = "az-swa"
+environment    = "dev"
+owner          = "platform-team"
+primary_domain = "dev.example.com"
+alert_email    = "ops@example.com"
+monthly_budget = 5
+
+sites = {
+  example = { domain = "dev.example.com" }
+  blogs   = { domain = "blogs.dev.example.com" }
+}
+
+github_org    = "your-org"
+github_repo   = "your-repo"
+github_branch = "deploy/azure"
