@@ -84,7 +84,48 @@ scripts/           Helper shell scripts
 docs/decisions/    AWS-specific ADRs
 ```
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full design.
+## Architecture
+
+What runs in AWS, what runs in GitHub, and how traffic + deploys flow.
+
+```mermaid
+flowchart TB
+    Browser[User browser]:::external
+
+    subgraph AWS["AWS account"]
+        direction TB
+        CF["CloudFront + ACM<br/>(us-east-1 cert)"]
+        S3[("S3 site bucket<br/>private, OAC")]
+        Lambda["Lambda Function URL<br/>contact form (Node 20)"]
+        DDB[("DynamoDB<br/>submissions")]
+        SES["SES<br/>domain identity"]
+        SNS["SNS alerts"]
+        Dashboard["CloudWatch dashboard"]
+        Budget["AWS Budget"]
+        Identity["IAM roles + groups<br/>(team-iam)"]
+    end
+
+    subgraph GitHub["GitHub"]
+        GHA["iac-plan / iac-apply<br/>iac-deploy-content"]
+        OIDC["OIDC role<br/>github-infra + github-content"]
+    end
+
+    Browser -->|"GET /"| CF
+    Browser -->|"POST /api/contact"| Lambda
+    CF -->|"origin pull"| S3
+    Lambda -->|"send"| SES
+    Lambda -->|"log"| DDB
+    Lambda -.->|"errors"| SNS
+
+    GHA -->|"assume role"| OIDC
+    OIDC -->|"s3 sync + invalidate"| CF
+    OIDC -->|"terraform apply"| AWS
+
+    classDef external fill:#fef,stroke:#333,stroke-width:1px
+```
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full module-by-module
+design.
 
 ## Add a new environment
 
