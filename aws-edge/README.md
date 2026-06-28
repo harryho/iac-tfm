@@ -27,8 +27,6 @@ ops baseline (CloudWatch dashboard, AWS Budget, SNS alerts).
 
 ## Quickstart
 
-See [`GETTING_STARTED.md`](GETTING_STARTED.md) for the full step-by-step.
-
 ```bash
 # 0. Prereqs (run from inside aws-edge/)
 ./scripts/prereqs.sh
@@ -37,7 +35,11 @@ See [`GETTING_STARTED.md`](GETTING_STARTED.md) for the full step-by-step.
 git clone https://github.com/YOUR_ORG/iac-tfm.git
 cd iac-tfm/aws-edge
 
-# 2. Make it yours
+# 2. Make it yours. The script prompts for:
+#    project name, primary region, GitHub org, GitHub repo name,
+#    primary domain, SES alert email.
+#    It rewrites example.com, YOUR_ORG, YOUR_REPO, ap-southeast-2
+#    across the tree.
 ./scripts/init-from-template.sh
 
 # 3. Bootstrap state backend
@@ -46,10 +48,27 @@ cd ..
 
 # 4. Wire up prod
 cd envs/prod
+cp terraform.tfvars.example terraform.tfvars
+$EDITOR terraform.tfvars   # fill in your values
 terraform init
 terraform plan
 
-# 5. After manual DNS setup, deploy content
+# 5. Point DNS and finish setup. After first apply:
+#    - ACM validation CNAMEs from `terraform output sites` → acm_validation_records
+#    - DKIM CNAMEs from `terraform output ses_dkim_records`
+#    - Site CNAMEs: <domain> → CloudFront distribution domain
+#    - Confirm SNS alert email subscription (check inbox)
+#    - Request SES production access in your region if not done
+# Re-run `terraform plan` until ACM certs move to ISSUED.
+
+# 6. Add CI/CD. Capture the OIDC role ARNs from `terraform output`:
+#    - github_infra_role_arn, github_content_role_arn
+#    In GitHub repo → Settings → Environments → production, add secrets:
+#    - AWS_ROLE_ARN_PLAN_PROD, AWS_ROLE_ARN_APPLY_PROD
+# Open a PR against main. The iac-plan.yml workflow should fire on the PR.
+
+# 7. Deploy your first site
+cd ../..
 ./scripts/deploy-site.sh prod example-com ./envs/prod/content/example-com/dist
 ./scripts/verify-site.sh prod example-com
 ```

@@ -1,15 +1,8 @@
-# Architecture
+# Architecture (aws-edge)
 
-## Layers
-
-| Layer | Location | State | Run by |
-|---|---|---|---|
-| Bootstrap | `bootstrap/` | `s3://<bucket>/bootstrap/terraform.tfstate` | Once per AWS account |
-| Environment | `envs/<env>/` | `s3://<bucket>/envs/<env>/terraform.tfstate` | Once per env |
-| Module | `modules/<name>/` | (no state) | Called by envs |
-
-`bootstrap/` is independent. `envs/<env>/` reads bootstrap outputs via
-`terraform_remote_state`. Modules are pure code.
+Cross-cutting conventions live one level up at
+[`/ARCHITECTURE.md`](../ARCHITECTURE.md). This file lists what each
+component in `aws-edge/` does.
 
 ## Components
 
@@ -38,41 +31,9 @@
 - Password policy + MFA enforcement
 - OIDC roles for GitHub Actions (per-env via `role_name_prefix`)
 
-### `envs/prod/`
+### `envs/<env>/`
 - Wires the modules together for one environment
 - Declares the SES domain identity (one per env)
 - SNS alerts topic + email subscription
 - CloudWatch dashboard
 - AWS Budget
-
-## State
-
-All state lives in S3 with DynamoDB locking. Bootstrap is at key
-`bootstrap/terraform.tfstate`; each env is at `envs/<env>/terraform.tfstate`.
-
-Destroying an env: see `scripts/teardown-env.sh`.
-
-## CI/CD
-
-Six GitHub Actions workflows, all OIDC:
-
-- `iac-plan.yml` — PR plan against every stack
-- `iac-apply.yml` — apply on main, gated by GitHub Environment
-- `deploy-content.yml` — content sync, matrix over env+site
-- `iac-test.yml` — `terraform test` on every PR
-- `iac-teardown.yml` — manual env destroy, gated by `teardown-<env>`
-- `iac-lock-consistency.yml` — re-init every stack on lock-file changes, fail on drift
-
-Secrets naming: `AWS_ROLE_ARN_PLAN_<ENV>` and `AWS_ROLE_ARN_APPLY_<ENV>`
-(uppercased env name).
-
-## Tagging
-
-Every resource has:
-```
-Project   = "iac-tfm"
-Env       = "<env_name>"
-Owner     = "platform-team"
-ManagedBy = "terraform"
-Site      = "<domain>"   # for per-site resources
-```
