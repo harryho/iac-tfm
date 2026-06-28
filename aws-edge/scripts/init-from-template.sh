@@ -31,6 +31,7 @@ prompt() {
 PROJECT_NAME=$(prompt "Project name (lowercase, alphanumeric + hyphens)" "iac-tfm")
 AWS_REGION=$(prompt "Primary AWS region" "ap-southeast-2")
 GITHUB_ORG=$(prompt "GitHub org/user (no YOUR_ prefix)")
+GITHUB_REPO=$(prompt "GitHub repo name (must match the repo you cloned)")
 PRIMARY_DOMAIN=$(prompt "Primary domain (e.g. example.com)")
 ALERT_EMAIL=$(prompt "SES alert email (or blank to skip)" "")
 
@@ -39,6 +40,7 @@ echo "About to substitute placeholders across the repo:"
 echo "  PROJECT_NAME  = $PROJECT_NAME"
 echo "  AWS_REGION    = $AWS_REGION"
 echo "  GITHUB_ORG    = $GITHUB_ORG"
+echo "  GITHUB_REPO   = $GITHUB_REPO"
 echo "  PRIMARY_DOMAIN= $PRIMARY_DOMAIN"
 echo "  ALERT_EMAIL   = ${ALERT_EMAIL:-<skipped>}"
 echo ""
@@ -51,7 +53,7 @@ find . -type f \( -name "*.md" -o -name "*.tf" -o -name "*.tfvars*" -o -name "*.
   -exec sed -i.bak \
     -e "s/example\.com/$PRIMARY_DOMAIN/g" \
     -e "s/YOUR_ORG/$GITHUB_ORG/g" \
-    -e "s/YOUR_REPO/$PROJECT_NAME/g" \
+    -e "s/YOUR_REPO/$GITHUB_REPO/g" \
     -e "s/ap-southeast-2/$AWS_REGION/g" \
     {} +
 find . -type f -name "*.bak" -not -path "./.git/*" -delete

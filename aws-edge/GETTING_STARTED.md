@@ -39,10 +39,10 @@ cd YOUR_REPO
 The script will prompt for:
 - project name (used in resource naming and tags)
 - primary region
-- GitHub org / repo
+- GitHub org
+- GitHub repo name
 - primary domain (e.g. `example.com`)
 - SES notification email
-- GitHub Environment name (e.g. `production`)
 
 It will rewrite all `example.com`, `YOUR_ORG`, `YOUR_REPO`,
 `ap-southeast-2` placeholders across the repo. Idempotent — refuses to
@@ -98,7 +98,7 @@ In your GitHub repo → Settings → Environments → `production`, add secrets:
 - `AWS_ROLE_ARN_PLAN_PROD`
 - `AWS_ROLE_ARN_APPLY_PROD`
 
-Push a commit. The `iac-plan.yml` workflow should fire.
+Open a PR against `main`. The `iac-plan.yml` workflow should fire on the PR.
 
 ## 7. Deploy your first site
 

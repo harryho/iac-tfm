@@ -9,7 +9,6 @@ locals {
     developer = "${var.project_name}-developers"
     tester    = "${var.project_name}-testers"
   }
-  common_tags = merge(var.common_tags, { ManagedBy = "terraform" })
 
   oidc_sub_condition = var.oidc_environment != "" ? (
     "repo:${var.github_org}/${var.github_repo}:environment:${var.oidc_environment}:*"
@@ -228,7 +227,7 @@ resource "aws_iam_user" "members" {
   name = each.value.name
   path = local.iam_path
 
-  tags = merge(local.common_tags, {
+  tags = merge(var.common_tags, {
     Role  = each.value.role
     Email = try(each.value.email, "n/a")
   })
@@ -291,7 +290,7 @@ resource "aws_iam_role" "github_content" {
     ]
   })
 
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy" "github_content" {
@@ -369,7 +368,7 @@ resource "aws_iam_role" "github_infra" {
     ]
   })
 
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "github_infra" {

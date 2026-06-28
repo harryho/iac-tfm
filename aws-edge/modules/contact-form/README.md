@@ -28,9 +28,11 @@ module "form" {
 
 ## Inputs
 
-See `variables.tf`. Note: `enable_contact_form` defaults to `false` at
-the per-site level; per-site files in `envs/<env>/sites/<site>.tf`
-override.
+See `variables.tf`. The `enable_contact_form` flag is set per site in
+`envs/<env>/terraform.tfvars`'s `sites` map. The per-site files in
+`envs/<env>/sites/_<site>.tf` are documentation placeholders — config
+lives in tfvars, the file just reminds you to drop the underscore
+prefix when you're ready.
 
 ## Outputs
 

@@ -54,13 +54,14 @@ Destroying an env: see `scripts/teardown-env.sh`.
 
 ## CI/CD
 
-Five GitHub Actions workflows, all OIDC:
+Six GitHub Actions workflows, all OIDC:
 
 - `iac-plan.yml` — PR plan against every stack
 - `iac-apply.yml` — apply on main, gated by GitHub Environment
 - `deploy-content.yml` — content sync, matrix over env+site
 - `iac-test.yml` — `terraform test` on every PR
 - `iac-teardown.yml` — manual env destroy, gated by `teardown-<env>`
+- `iac-lock-consistency.yml` — re-init every stack on lock-file changes, fail on drift
 
 Secrets naming: `AWS_ROLE_ARN_PLAN_<ENV>` and `AWS_ROLE_ARN_APPLY_<ENV>`
 (uppercased env name).

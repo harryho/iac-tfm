@@ -139,5 +139,5 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repo name for OIDC trust. Replace YOUR_REPO placeholder before applying."
   type        = string
-  default     = "iac-tfm"
+  default     = "YOUR_REPO"
 }

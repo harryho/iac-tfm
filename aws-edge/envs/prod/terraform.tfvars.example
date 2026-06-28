@@ -45,4 +45,4 @@ sites = {
 
 # GitHub OIDC — REPLACE the placeholders below before applying
 github_org  = "YOUR_ORG"
-github_repo = "iac-tfm"
+github_repo = "YOUR_REPO"

@@ -34,11 +34,12 @@ assume the role. Set `oidc_environment` to the GitHub Environment name
 (production, staging, etc.) — usually the same as `environment_name`
 in envs/<env>/.
 
-## Placeholder guard
+## Placeholders
 
-A `terraform_data` precondition fails the plan if `github_org` or
-`github_repo` start with `YOUR_`. Replace the placeholders in
-`envs/<env>/terraform.tfvars` before applying.
+`github_org` and `github_repo` default to empty strings. If either is
+empty at apply time, the OIDC provider and per-env IAM roles are not
+created. Set them in `envs/<env>/terraform.tfvars` before applying if
+you want CI/CD roles.
 
 ## Inputs / Outputs
 

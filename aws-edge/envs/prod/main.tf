@@ -8,8 +8,10 @@ terraform {
     }
   }
 
-  # Uncomment after running scripts/init-from-template.sh + bootstrap.
-  # Get the values from `terraform -chdir=bootstrap output backend_config`.
+  # After running bootstrap (`cd bootstrap && terraform apply`), uncomment
+  # this block and fill in the values from
+  # `terraform -chdir=bootstrap output backend_config`. `init-from-template.sh`
+  # does not touch this file — you must do it by hand.
   #
   # backend "s3" {
   #   bucket         = "iac-tfm-state-<account>-<region>"
