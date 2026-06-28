@@ -26,6 +26,18 @@ override.tf.json
 # Lambda builds
 **/builds/
 
+# Node (az-swa/modules/contact-form)
+node_modules/
+package-lock.json
+
+# sed -i.bak artifacts from init-from-template.sh and replicate-env.sh
+*.bak
+
+# Local env / secrets (defense in depth)
+.env
+.env.*
+!.env.example
+
 # OS / editor
 .DS_Store
 .idea/
