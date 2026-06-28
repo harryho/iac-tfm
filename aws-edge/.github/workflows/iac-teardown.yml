@@ -1,0 +1,58 @@
+name: "iac-tfm: Teardown Env"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to tear down (must match a dir under envs/)"
+        required: true
+        type: string
+      confirm:
+        description: "Type the env name again to confirm"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: iac-teardown-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  teardown:
+    name: Teardown ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: teardown-${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate confirmation
+        env:
+          ENV_NAME: ${{ inputs.environment }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [ "$ENV_NAME" != "$CONFIRM" ]; then
+            echo "Confirmation does not match env name. Aborting."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets[format('AWS_ROLE_ARN_APPLY_%s', upper(inputs.environment))] }}
+          aws-region: ap-southeast-2
+
+      - name: Run teardown script
+        env:
+          ENV_NAME: ${{ inputs.environment }}
+        run: ./aws-edge/scripts/teardown-env.sh "$ENV_NAME" --no-state-cleanup
+
+      - name: Upload teardown logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: teardown-${{ inputs.environment }}-logs
+          path: teardown-*.log
