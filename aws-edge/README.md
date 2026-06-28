@@ -76,12 +76,29 @@ cd ../..
 ## Layout
 
 ```
-bootstrap/         S3 + DynamoDB state backend (run once per AWS account)
-modules/           Reusable Terraform modules
-envs/<env>/        Per-environment stacks (envs/prod ships by default)
-scripts/           Helper shell scripts
-.github/workflows/ CI/CD pipelines (OIDC, env-aware)
-docs/decisions/    AWS-specific ADRs
+bootstrap/                       S3 + DynamoDB state backend (one-time per AWS account)
+modules/
+├── static-site/                CloudFront + S3 (private, OAC) + ACM in us-east-1;
+│                               optional www → apex redirect via CloudFront Function;
+│                               custom 404 page
+├── contact-form/               Lambda (Node 20, SES + DynamoDB);
+│                               Function URL (public, CORS locked to site domain);
+│                               DynamoDB submissions table;
+│                               CloudWatch log group + error alarm;
+│                               optional Cloudflare Turnstile
+└── team-iam/                   IAM groups (admin/developer/tester);
+                                IAM users from team_members variable;
+                                password policy + MFA enforcement;
+                                OIDC roles for GitHub Actions (per-env)
+envs/<env>/                     Per-environment stacks (envs/prod ships by default).
+                                Wires the modules together;
+                                declares the SES domain identity (one per env);
+                                SNS alerts + email subscription;
+                                CloudWatch dashboard;
+                                AWS Budget
+scripts/                        Helper shell scripts
+.github/workflows/              CI/CD pipelines (OIDC, env-aware)
+docs/decisions/                 AWS-specific ADRs
 ```
 
 ## Architecture
@@ -123,9 +140,6 @@ flowchart TB
 
     classDef external fill:#fef,stroke:#333,stroke-width:1px
 ```
-
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full module-by-module
-design.
 
 ## Add a new environment
 
