@@ -31,7 +31,8 @@ az-swa/
 │   └── contact-form/                function code + app settings
 ├── envs/<env>/                      wires modules for one env
 ├── scripts/                         deploy / verify / teardown
-└── content/<env>/<site>/dist/       static content (place your build output here)
+├── content/<env>/<site>/dist/       static content (place your build output here)
+└── .github/workflows/               CI/CD (plan, apply, deploy-content)
 ```
 
 ## Quickstart
@@ -73,6 +74,30 @@ cd ../..
 ./scripts/verify-site.sh --env dev <site-key>
 ```
 
+## CI/CD
+
+Three workflows live at `az-swa/.github/workflows/`:
+
+| Workflow | Triggers on | Does |
+|---|---|---|
+| `az-swa-iac-plan.yml` | PR touching `az-swa/envs/**`, `az-swa/modules/**`, or the workflow files | `fmt -check`, `validate`, `plan` against the dev env |
+| `az-swa-iac-apply.yml` | Push to `deploy/azure` touching `az-swa/envs/**` or `az-swa/modules/**` (or `workflow_dispatch`) | `terraform apply -auto-approve` on dev, gated by GitHub Environment `dev` |
+| `az-swa-deploy-content.yml` | Push to `deploy/azure` touching `az-swa/content/dev/**` | matrix over changed sites, calls `./az-swa/scripts/deploy-site.sh --env dev <site>` |
+
+OIDC trust: the federated credentials created by the
+`workload-identity` module match `repo:<org>/<repo>:environment:dev`,
+which is what GitHub sends in the OIDC subject claim when a workflow
+runs in the `dev` GitHub Environment. The Environment name in the
+GitHub UI must be exactly `dev`.
+
+Secrets consumed (set in `gh secret set … --repo <org>/<repo>`):
+
+- `AZ_SWA_DEV_INFRA_CLIENT_ID` — used by plan + apply (terraform apply role)
+- `AZ_SWA_DEV_CONTENT_CLIENT_ID` — used by deploy-content (SWA deploy role)
+- `AZ_SWA_DEV_TENANT_ID` — Azure AD tenant
+- `AZ_SWA_DEV_SUBSCRIPTION_ID` — Azure subscription
+- `AZ_SWA_DEV_TFVARS` — contents of `envs/dev/terraform.tfvars`
+
 ## Add a new environment
 
 ```bash
@@ -104,7 +129,9 @@ cd envs/stage && terraform init && terraform apply
    (`static-hosting` → whatever your cloud calls it, e.g. `cloudfront-cdn`
    for AWS, `cloud-cdn` for GCP).
 4. Replace `scripts/` with your cloud's native deploy/verify/teardown.
-5. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`.
+5. Add `<cloud>/.github/workflows/` modeled on
+   `az-swa/.github/workflows/` (Azure example) or `aws-edge/.github/workflows/`
+   (AWS example).
 6. Add a row to the table in `/README.md`.
 
 Keep the **shape** (bootstrap → modules → envs → scripts), keep

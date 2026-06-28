@@ -9,7 +9,8 @@ in its own self-contained folder that follows the same shape:
 ├── modules/      reusable Terraform modules
 ├── envs/<env>/   per-environment stacks
 ├── scripts/      deploy / verify / teardown helpers
-└── content/<env>/<site>/dist/   static content
+├── content/<env>/<site>/dist/   static content
+└── .github/workflows/   CI/CD (OIDC, scoped to this cloud)
 ```
 
 ## Implementations
@@ -32,7 +33,8 @@ in its own self-contained folder that follows the same shape:
 2. Replace the provider in `bootstrap/`, `modules/`, and `envs/<env>/`.
 3. Rename modules to match your cloud's naming (the az-swa reference uses generic module names; adapt to your service).
 4. Update scripts for the cloud's deploy/verify/teardown commands.
-5. Add `.github/workflows/` modeled on `aws-edge/.github/workflows/`.
+5. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`
+   or `az-swa/.github/workflows/` — pick whichever cloud is closest to yours.
 6. Add a row to the table above and link to the new folder's README.
 
 ## Repo-wide docs

@@ -1,0 +1,65 @@
+name: "az-swa: Deploy Content"
+
+on:
+  push:
+    branches: [deploy/azure]
+    paths:
+      - "az-swa/content/dev/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  detect:
+    name: Detect changed sites
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: set-matrix
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD \
+            | grep -E '^az-swa/content/dev/[^/]+/' \
+            | sed -E 's|^az-swa/content/dev/([^/]+)/.*|\1|' \
+            | sort -u)
+          if [ -z "$CHANGED" ]; then
+            echo "matrix=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MATRIX=$(echo "$CHANGED" | jq -R -s 'split("\n") | map(select(length > 0)) | map({site: .})')
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy ${{ matrix.site }}
+    needs: detect
+    if: needs.detect.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    environment: dev
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (content)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZ_SWA_DEV_CONTENT_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_SWA_DEV_TENANT_ID }}
+          subscription-id: ${{ secrets.AZ_SWA_DEV_SUBSCRIPTION_ID }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install SWA CLI
+        run: npm install -g @azure/static-web-apps-cli
+
+      - name: Deploy ${{ matrix.site }}
+        run: ./az-swa/scripts/deploy-site.sh --env dev ${{ matrix.site }}
