@@ -35,6 +35,45 @@ az-swa/
 └── .github/workflows/               CI/CD (plan, apply, deploy-content)
 ```
 
+## Architecture
+
+What runs in Azure, what runs in GitHub, and how traffic + deploys flow.
+
+```mermaid
+flowchart TB
+    Browser[User browser]:::external
+
+    subgraph Azure["Azure subscription"]
+        SWA["Static Web App<br/>managed CDN + HTTPS + Functions"]
+        Functions["SWA Linked API<br/>contact-form (Node 20)"]
+        ACS["ACS Email<br/>primary"]
+        RG["Resource Group<br/>project-env-rg"]
+        UAI["User-Assigned Identity<br/>infra + content (OIDC)"]
+        Budget["Consumption Budget<br/>monthly alerts"]
+    end
+
+    subgraph AWS["AWS (fallback)"]
+        SES["SES<br/>when ACS not configured"]
+    end
+
+    subgraph GitHub["GitHub Actions"]
+        GHA["iac-plan / iac-apply<br/>deploy-content"]
+        OIDC["OIDC federated credential<br/>environment:dev"]
+    end
+
+    Browser -->|"GET /"| SWA
+    Browser -->|"POST /api/contact"| SWA
+    SWA -->|"/api/*"| Functions
+    Functions --> ACS
+    Functions -.-> SES
+
+    GHA -->|"assume UAI"| OIDC
+    OIDC -->|"terraform apply"| RG
+    OIDC -->|"swa deploy"| SWA
+
+    classDef external fill:#fef,stroke:#333,stroke-width:1px
+```
+
 ## Quickstart
 
 ```bash

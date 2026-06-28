@@ -76,15 +76,70 @@ cd ../..
 ## Layout
 
 ```
-bootstrap/         S3 + DynamoDB state backend (run once per AWS account)
-modules/           Reusable Terraform modules
-envs/<env>/        Per-environment stacks (envs/prod ships by default)
-scripts/           Helper shell scripts
-.github/workflows/ CI/CD pipelines (OIDC, env-aware)
-docs/decisions/    AWS-specific ADRs
+bootstrap/                       S3 + DynamoDB state backend (one-time per AWS account)
+modules/
+├── static-site/                CloudFront + S3 (private, OAC) + ACM in us-east-1;
+│                               optional www → apex redirect via CloudFront Function;
+│                               custom 404 page
+├── contact-form/               Lambda (Node 20, SES + DynamoDB);
+│                               Function URL (public, CORS locked to site domain);
+│                               DynamoDB submissions table;
+│                               CloudWatch log group + error alarm;
+│                               optional Cloudflare Turnstile
+└── team-iam/                   IAM groups (admin/developer/tester);
+                                IAM users from team_members variable;
+                                password policy + MFA enforcement;
+                                OIDC roles for GitHub Actions (per-env)
+envs/<env>/                     Per-environment stacks (envs/prod ships by default).
+                                Wires the modules together;
+                                declares the SES domain identity (one per env);
+                                SNS alerts + email subscription;
+                                CloudWatch dashboard;
+                                AWS Budget
+scripts/                        Helper shell scripts
+.github/workflows/              CI/CD pipelines (OIDC, env-aware)
+docs/decisions/                 AWS-specific ADRs
 ```
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full design.
+## Architecture
+
+What runs in AWS, what runs in GitHub, and how traffic + deploys flow.
+
+```mermaid
+flowchart TB
+    Browser[User browser]:::external
+
+    subgraph AWS["AWS account"]
+        direction LR
+        CF["CloudFront + ACM<br/>(us-east-1 cert)"]
+        S3[("S3 site bucket<br/>private, OAC")]
+        Lambda["Lambda Function URL<br/>contact form (Node 20)"]
+        DDB[("DynamoDB<br/>submissions")]
+        SES["SES<br/>domain identity"]
+        SNS["SNS alerts"]
+        Dashboard["CloudWatch dashboard"]
+        Budget["AWS Budget"]
+        Identity["IAM roles + groups<br/>(team-iam)"]
+    end
+
+    subgraph GitHub["GitHub"]
+        GHA["iac-plan / iac-apply<br/>iac-deploy-content"]
+        OIDC["OIDC role<br/>github-infra + github-content"]
+    end
+
+    Browser -->|"GET /"| CF
+    Browser -->|"POST /api/contact"| Lambda
+    CF -->|"origin pull"| S3
+    Lambda -->|"send"| SES
+    Lambda -->|"log"| DDB
+    Lambda -.->|"errors"| SNS
+
+    GHA -->|"assume role"| OIDC
+    OIDC -->|"s3 sync + invalidate"| CF
+    OIDC -->|"terraform apply"| AWS
+
+    classDef external fill:#fef,stroke:#333,stroke-width:1px
+```
 
 ## Add a new environment
 
