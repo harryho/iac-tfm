@@ -1,0 +1,15 @@
+{
+  "name": "contact-form-fn",
+  "version": "1.0.0",
+  "description": "Contact form handler — validates Turnstile, writes to Firestore, sends email via SendGrid",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^7.10.0",
+    "@google-cloud/functions-framework": "^3.4.2",
+    "nodemailer": "^6.9.16",
+    "nodemailer-sendgrid-transport": "^0.2.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

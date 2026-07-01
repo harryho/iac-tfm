@@ -1,0 +1,14 @@
+# --------------------------------------------------------------------------
+# gcp-edge bootstrap
+#
+# Copy this file to terraform.tfvars and adjust values as needed.
+# Run `terraform init && terraform plan && terraform apply` once per project.
+# --------------------------------------------------------------------------
+
+# --- Required ---
+project_id  = "your-project-id"
+admin_email = "you@example.com"
+
+# --- Naming (optional) ---
+region       = "us-central1"
+project_name = "gcp-edge"

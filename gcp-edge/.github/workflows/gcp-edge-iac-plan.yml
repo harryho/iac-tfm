@@ -1,0 +1,60 @@
+name: "gcp-edge: Terraform Plan"
+
+on:
+  pull_request:
+    paths:
+      - "gcp-edge/envs/**"
+      - "gcp-edge/modules/**"
+      - "gcp-edge/.github/workflows/gcp-edge-iac-plan.yml"
+      - "gcp-edge/.github/workflows/gcp-edge-iac-apply.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: gcp-edge-iac-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Plan prod
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_EDGE_PROD_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_EDGE_PROD_INFRA_SA }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform fmt
+        working-directory: gcp-edge
+        run: terraform fmt -check -recursive
+
+      - name: Write tfvars from secret
+        working-directory: gcp-edge/envs/prod
+        run: printf '%s' "$TFVARS" > terraform.tfvars
+        env:
+          TFVARS: ${{ secrets.GCP_EDGE_PROD_TFVARS }}
+
+      - name: Terraform init
+        working-directory: gcp-edge/envs/prod
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        working-directory: gcp-edge/envs/prod
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: gcp-edge/envs/prod
+        run: terraform plan -input=false -no-color
