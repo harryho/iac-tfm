@@ -1,0 +1,33 @@
+# Terraform
+.terraform/
+.terraform.d/
+*.terraform.tfstate.lock.info
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Variable files (may contain secrets)
+terraform.tfvars
+*.auto.tfvars
+
+# Plan files
+*.tfplan
+
+# Cloud Function build artefacts
+modules/contact-form-fn/builds/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log

@@ -37,9 +37,18 @@ the goal of keeping each env explicit and self-contained.
 
 No long-lived cloud credentials in GitHub. Each cloud folder owns its
 own CI workflows (`<cloud>/.github/workflows/`) that assume short-lived
-roles/identities via OIDC federated credentials. AWS-side setup is covered in
-[`aws-edge/GETTING_STARTED.md`](aws-edge/GETTING_STARTED.md); the same
-pattern applies to other clouds.
+roles/identities via OIDC federated credentials.
+
+Cloud-specific setup is covered in each cloud's `GETTING_STARTED.md`:
+
+- [`aws-edge/GETTING_STARTED.md`](aws-edge/GETTING_STARTED.md) — IAM
+  OIDC roles
+- [`az-swa/GETTING_STARTED.md`](az-swa/GETTING_STARTED.md) — federated
+  credentials + user-assigned identity
+- [`gcp-edge/GETTING_STARTED.md`](gcp-edge/GETTING_STARTED.md) —
+  Workload Identity Federation pool + service accounts
+
+The pattern is the same; only the cloud-specific terminology differs.
 
 ### Per-site contact form is optional
 
@@ -50,18 +59,21 @@ created.
 
 ## How to add a new cloud
 
-1. **Copy the shape from `az-swa/`**, not from `aws-edge/`. `az-swa/`
-   is the cleaner reference; `aws-edge/` is the older implementation
-   with known issues from a 2026-06-22 audit that haven't been fixed.
+1. **Copy the shape from `az-swa/`** or `gcp-edge/`. Both are clean
+   references; `aws-edge/` is the older implementation with known
+   issues from a 2026-06-22 audit that haven't been fixed.
 2. Pick a folder name that matches your cloud + offering
-   (e.g., `az-swa/` for Azure Static Web Apps, `gcp-cdn/` for GCP, etc.).
+   (e.g., `az-swa/` for Azure Static Web Apps, `gcp-edge/` for GCP, etc.).
 3. Replace provider blocks in `bootstrap/`, `modules/`, and `envs/<env>/`.
 4. Rename modules to match your cloud's primitive names — `az-swa/`
    uses generic names (`static-hosting`, `workload-identity`, `contact-form`);
-   adapt to whatever your cloud calls them.
+   `gcp-edge/` uses cloud-specific names (`static-site-cdn`,
+   `contact-form-fn`, `team-iam`, `ops`); adapt to whatever your cloud
+   calls them.
 5. Replace `scripts/` with the cloud's native deploy/verify/teardown
    commands.
 6. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`,
+   `az-swa/.github/workflows/`, or `gcp-edge/.github/workflows/`,
    adjusting for the cloud's OIDC setup.
 7. Add a row to the table in [`README.md`](README.md).
 8. Optionally add a cloud-specific `<cloud>/ARCHITECTURE.md` for

@@ -1,0 +1,47 @@
+# --------------------------------------------------------------------------
+# gcp-edge prod environment
+#
+# Copy this file to terraform.tfvars and adjust values as needed.
+# Run `terraform init && terraform plan && terraform apply` from this folder.
+# --------------------------------------------------------------------------
+
+# --- Required ---
+project_id  = "your-project-id"
+alert_email = "you@example.com"
+
+# --- Naming (optional) ---
+region       = "us-central1"
+project_name = "gcp-edge"
+environment  = "prod"
+site_domain  = "example.com"
+org_domain   = "example.org"
+
+# --- Budget ---
+monthly_budget_limit_usd = 5
+billing_account_id       = "" # Get from `gcloud billing accounts list`. Leave empty to skip budget.
+
+# --- Sites ---
+sites = {
+  www_example_com = {
+    domain = "www.example.com"
+  }
+  blogs_example_com = {
+    domain              = "blogs.example.com"
+    enable_www_redirect = false
+  }
+}
+
+# --- Optional: apex redirect (apex -> www) ---
+# enable_apex_redirect = true  # default
+
+# --- Optional: Cloudflare Turnstile for contact form spam protection ---
+# 1. Sign up at https://dash.cloudflare.com -> Turnstile
+# 2. Create a widget for your site domain
+# 3. Set the secret via Secret Manager:
+#      echo -n '0x...' | gcloud secrets versions add turnstile-secret --data-file=-
+# turnstile_secret = "0x..."
+
+# --- Optional: GitHub OIDC for CI/CD ---
+# github_org  = "your-github-username"
+# github_repo = "iac-tfm"
+# github_envs = ["production"]

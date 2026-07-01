@@ -86,8 +86,8 @@ Edit `terraform.tfvars` and fill in your values:
 
 | Variable | What to enter | Example |
 |---|---|---|
-| `primary_domain` | The domain your sites live under | `dev.mycompany.com` |
-| `alert_email` | Email for budget alerts | `ops@mycompany.com` |
+| `primary_domain` | The domain your sites live under | `dev.example.com` |
+| `alert_email` | Email for budget alerts | `ops@example.com` |
 | `sites` | Map of site keys to domains | see below |
 
 ### 3b — Add your first site
@@ -97,7 +97,7 @@ The `sites` map controls which sites are deployed:
 ```hcl
 sites = {
   example = {
-    domain = "dev.mycompany.com"
+    domain = "dev.example.com"
   }
 }
 ```

@@ -19,8 +19,9 @@ variable "owner" {
 }
 
 variable "primary_domain" {
-  type    = string
-  default = "dev.harryho.net"
+  description = "Apex site domain for this env (sites are subdomains of this)"
+  type        = string
+  default     = "dev.example.com"
 }
 
 variable "alert_email" {
