@@ -24,33 +24,46 @@ The shape:
 └── .github/workflows/               CI/CD (plan, apply, deploy-content)
 ```
 
+The modules listed above are the **generic** names from `az-swa/`.
+Concrete cloud folders may use cloud-specific names — `gcp-edge/`
+uses `static-site-cdn`, `contact-form-fn`, `team-iam`, and `ops`.
+The **shape** is what matters.
+
 ## Implementations
 
 | Folder | Cloud | Stack |
 |---|---|---|
 | [`aws-edge/`](aws-edge/) | AWS | CloudFront + S3 (private, OAC) + ACM, Lambda + SES + DynamoDB for per-site contact forms, IAM groups + OIDC roles for CI/CD, CloudWatch dashboard + AWS Budget + SNS alerts. Original implementation — has known issues from a 2026-06-22 audit that haven't been fixed |
 | [`az-swa/`](az-swa/) | Azure | Static Web Apps (managed CDN + HTTPS + Functions), ACS Email for contact-form primary with AWS SES fallback, user-assigned identities + federated credentials for CI/CD, consumption-budget alerts. Synthesized reference pattern — clone this shape for new clouds |
+| [`gcp-edge/`](gcp-edge/) | GCP | Global External HTTPS LB + Cloud CDN + backend buckets + GCS (private), Cloud Functions 2nd gen + SendGrid + Firestore for per-site contact forms, Workload Identity Federation for CI/CD, Cloud Monitoring dashboard + billing budget. Generic template — values are placeholders |
 
 ## Conventions
 
 - **One state backend per cloud account** — `<cloud>/bootstrap/` provisions it once.
 - **Directory-based envs** — `<cloud>/envs/<env>/` is self-contained, easy to compare, easy to tear down.
-- **OIDC-only CI/CD** — no long-lived cloud credentials in GitHub. AWS-side
-  setup is covered in [`aws-edge/GETTING_STARTED.md`](aws-edge/GETTING_STARTED.md);
-  the same pattern applies to any cloud.
+- **OIDC-only CI/CD** — no long-lived cloud credentials in GitHub. Each
+  cloud's `GETTING_STARTED.md` walks you through the cloud-specific
+  setup:
+  [`aws-edge/`](aws-edge/GETTING_STARTED.md),
+  [`az-swa/`](az-swa/GETTING_STARTED.md),
+  [`gcp-edge/`](gcp-edge/GETTING_STARTED.md).
 - **Per-site contact form is optional** — each env's `sites` map turns it on per site; contact-form resources only exist when enabled.
 - **Lambdas, Functions, and other serverless compute** ship inside the contact-form module — no separate "compute" folder. The pattern is: per-site API surface, configured via app settings.
 
 ## Adding a new cloud
 
-1. Copy `az-swa/` as the starting shape.
+1. Copy `az-swa/` (generic module names: `static-hosting`,
+   `contact-form`, `workload-identity`) or `gcp-edge/` (cloud-specific
+   names: `static-site-cdn`, `contact-form-fn`, `team-iam`, `ops`) as
+   the starting shape.
 2. Replace the provider in `bootstrap/`, `modules/`, and `envs/<env>/`.
-3. Rename modules to match your cloud's primitive names (az-swa uses
-   generic names: `static-hosting`, `contact-form`, `workload-identity`;
-   adapt to whatever your cloud calls them).
+3. Rename modules to match your cloud's primitive names — pick
+   whichever set (generic vs cloud-specific) reads more naturally for
+   your cloud.
 4. Update scripts for the cloud's native deploy/verify/teardown.
-5. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`
-   or `az-swa/.github/workflows/` — pick whichever cloud is closest.
+5. Add `<cloud>/.github/workflows/` modeled on `aws-edge/.github/workflows/`,
+   `az-swa/.github/workflows/`, or `gcp-edge/.github/workflows/` —
+   pick whichever cloud is closest.
 6. Add a row to the table above and link to the new folder's README.
 
 ## Local development
